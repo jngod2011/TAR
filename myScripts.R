@@ -3,11 +3,11 @@
 library(vars)
 
 myplot <- function (x, type="l") {
-  plot(x, type=type, col=round(runif(1,1,6),0))
+  plot(x, type=type, col=1)
 }
 
 mylines <- function (x, type="l") {
-  lines(x, type=type, col=round(runif(1,1,6),0))
+  lines(x, type=type, col=round(runif(1,2,6),0))
 }
 
 myar <- function(z, lags=0) {

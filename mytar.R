@@ -8,7 +8,7 @@ myNonLinearityTest <- function(series, p=1, d=1, k=3) {
   
   h <- max(1, p+1-d)
   z <- series[h:(length(series)-d)]
-  index <- seq(1:length(z))
+  index <- order(z)
   
   df <- data.frame(z, index)
   
