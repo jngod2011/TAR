@@ -1,3 +1,5 @@
+install.packages("tsDyn")
+
 m1 <- log(MEI$M1IDX_EA)-log(MEI$M1IDX_US)
 m3 <- log(MEI$M3IDX_EA)-log(MEI$M3IDX_US)
 y <- log(MEI$GDPIDX_US)-log(MEI$GDPIDX_EA)

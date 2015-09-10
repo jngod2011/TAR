@@ -2,15 +2,15 @@
 
 library(vars)
 
-mplot <- function (x, type="l") {
+myplot <- function (x, type="l") {
   plot(x, type=type, col=round(runif(1,1,6),0))
 }
 
-mlines <- function (x, type="l") {
+mylines <- function (x, type="l") {
   lines(x, type=type, col=round(runif(1,1,6),0))
 }
 
-mar <- function(z, lags=0) {
+myar <- function(z, lags=0) {
   if(lags==0) {
     lags <- round(((VARselect(z)$selection[1]+VARselect(z)$selection[3])/2), digits = 0)
   }
@@ -28,5 +28,4 @@ mar <- function(z, lags=0) {
   
   AR <- lm(z~., data=data)
   return(AR)
-  
 }
