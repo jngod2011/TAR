@@ -29,3 +29,10 @@ myar <- function(z, lags=0) {
   AR <- lm(z~., data=data)
   return(AR)
 }
+
+mylag <- function(series, lag=1) {
+  
+  data <- c(series[(lag+1):length(series)],rep(NA,lag))
+  return(data)
+  
+}
