@@ -37,7 +37,7 @@ myNonLinearityTest <- function(series, p=1, d=1, k=3) {
   regime <- arrangedData[1:m,1:(ncol(arrangedData)-1)]
   
   # coefficients for first m cases
-  summary(lm(z~., data=regime))
+  coef <- summary(lm(z~., data=regime))$coefficients[,1]
   
   return(df)
 }
