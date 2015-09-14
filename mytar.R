@@ -36,6 +36,8 @@ myNonLinearityTest <- function(series, p=0, S, k=3) {
   
   # calculate test statistic here
   
+  # coefficients for first m cases
+  coef <- summary(lm(z~., data=regime))$coefficients[,1]
   
   return(df)
 }
@@ -52,7 +54,7 @@ getPredictiveResiduals <- function(data, m, d, p) {
     regime <- data[1:t,]
     lm(z~., data = regime)
     
-    predictiveResiduals <- 
+    predictiveResiduals <- ...
   }
   
   
