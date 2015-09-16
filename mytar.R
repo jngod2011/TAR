@@ -6,6 +6,7 @@ library(vars)
 # k .. number of regimes
 # m .. regime starting size
 # see 1998 Martens et al, Appendix Step 2
+
 myNonLinearityTest <- function(series, p=0, S, k=3) { 
   
   
@@ -43,23 +44,20 @@ myNonLinearityTest <- function(series, p=0, S, k=3) {
 }
 
 
-# calculate predictive residuals with recursive OLS to select optimal threshold lag d
-# thresholdSeries: series of threshold values by which the cases of data will be sorted (z_(t-d))
+# calculate predictive residuals with recursive LS to select optimal threshold lag d
+# data is already sorted according to threshold value (z_(t-d))
 getPredictiveResiduals <- function(data, m, d, p) { 
   predictiveResiduals <- NULL
+  resid <- NULL
   
   data <- data[order(data[d+1]),] # arrange by threshold d, regressors stat in 2nd column, hence d+1
   
-  for (t in m:nrow(data)) {
+  for (t in m:(nrow(data)-1)) {
     regime <- data[1:t,]
-    lm(z~., data = regime)
-    
-    predictiveResiduals <- ...
+    regime.lm <- lm(z~., data = regime)
+    resid <- data[t+1,1]-(sum(data[t+1,2:(p+1)]*regimelm$coefficients[2:(p+1)])+regimelm$coefficients[1])
+    predictiveResiduals <- as.numeric(c(predictiveResiduals,resid))
   }
-  
-  
-  
-  
   
   return(predictiveResiduals)
 }
