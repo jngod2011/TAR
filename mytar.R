@@ -9,20 +9,19 @@ library(vars)
 
 myNonLinearityTest <- function(series, p=0, S, k=3) { 
   
-  
   if(p==0) { # auto select lag order p
     p <- round(((VARselect(series)$selection[1]+VARselect(series)$selection[3])/2), digits = 0)
   }
   
-  S <- seq(1:4)
   m <- getRegimeSize(series)
-  
-  #h <- max(1, p+1-d)
+  N <- length(series)
+  FStatVector <- NULL
   
   z <- series
-  length <- length(z)
   data <- data.frame(z)
   
+  
+  # generate AR dataframe, cut off lost values
   for(i in 1:p) {
     z <- series[(1+i):(length+i)]
     data <- data.frame(data,z)
@@ -30,25 +29,24 @@ myNonLinearityTest <- function(series, p=0, S, k=3) {
   data <- data[1:(nrow(data)-p),]
   
   
-  for (d in 1:length(S)) {
-    getPredictiveResiduals(data, m, d, p)
+  # calculate test statistic
+  for (d in S) {
+    FStat <- NULL
+    FStat <- getFStat(data, m, d, p, N)
+    FStatVector <- c(FStatVector, FStat)
     
   }
   
-  # calculate test statistic here
-  
-  # coefficients for first m cases
-  coef <- summary(lm(z~., data=regime))$coefficients[,1]
-  
-  return(df)
+  return(FStatVector)
 }
 
 
 # calculate predictive residuals with recursive LS to select optimal threshold lag d
 # data is already sorted according to threshold value (z_(t-d))
-getPredictiveResiduals <- function(data, m, d, p) { 
+getFStat <- function(data, m, d, p, N=N) { 
   predictiveResiduals <- NULL
   resid <- NULL
+  h <- max(1, p+1-d)
   
   data <- data[order(data[d+1]),] # arrange by threshold d, regressors stat in 2nd column, hence d+1
   
@@ -59,7 +57,13 @@ getPredictiveResiduals <- function(data, m, d, p) {
     predictiveResiduals <- as.numeric(c(predictiveResiduals,resid))
   }
   
-  return(predictiveResiduals)
+  residualDF <- data.frame(predictiveResiduals,data[(m+1):nrow(data),2:(p+1)])
+  estimatedResiduals <- summary(lm(predictiveResiduals~., data=residualDF))$residuals
+  
+  FStat <- ((sum(predictiveResiduals^2)-sum(estimatedResiduals^2))/(p+1))/(sum(estimatedResiduals^2)/(N-d-m-p-h))
+  
+  return(FStat)
+  
 }
 
 
