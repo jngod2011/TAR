@@ -1,5 +1,3 @@
-library(vars)
-
 # p .. lag order 
 # d .. particular threshold lag
 # S .. set of threshold lags
@@ -7,12 +5,12 @@ library(vars)
 # m .. regime starting size
 # see 1998 Martens et al, Appendix Step 2
 
-myNonLinearityTest <- function(series, p=0, S, k=3) { 
+myNonLinearityTest <- function(series, p=0, S=seq(1,4), k=3) { 
   
   if(p==0) { # auto select lag order p
-    p <- round(((VARselect(series)$selection[1]+VARselect(series)$selection[3])/2), digits = 0)
+    p <- as.numeric(round(((VARselect(series)$selection[1]+VARselect(series)$selection[3])/2), digits = 0))
   }
-  
+  i <- NULL
   m <- getRegimeSize(series)
   N <- length(series)
   FStatVector <- NULL
@@ -23,7 +21,7 @@ myNonLinearityTest <- function(series, p=0, S, k=3) {
   
   # generate AR dataframe, cut off lost values
   for(i in 1:p) {
-    z <- series[(1+i):(length+i)]
+    z <- series[(1+i):(length(series)+i)]
     data <- data.frame(data,z)
   }
   data <- data[1:(nrow(data)-p),]
@@ -37,7 +35,7 @@ myNonLinearityTest <- function(series, p=0, S, k=3) {
     
   }
   
-  return(FStatVector)
+  return(as.numeric(FStatVector))
 }
 
 
@@ -53,7 +51,7 @@ getFStat <- function(data, m, d, p, N=N) {
   for (t in m:(nrow(data)-1)) {
     regime <- data[1:t,]
     regime.lm <- lm(z~., data = regime)
-    resid <- data[t+1,1]-(sum(data[t+1,2:(p+1)]*regimelm$coefficients[2:(p+1)])+regimelm$coefficients[1])
+    resid <- data[t+1,1]-(sum(data[t+1,2:(p+1)]*regime.lm$coefficients[2:(p+1)])+regime.lm$coefficients[1])
     predictiveResiduals <- as.numeric(c(predictiveResiduals,resid))
   }
   
@@ -63,7 +61,6 @@ getFStat <- function(data, m, d, p, N=N) {
   FStat <- ((sum(predictiveResiduals^2)-sum(estimatedResiduals^2))/(p+1))/(sum(estimatedResiduals^2)/(N-d-m-p-h))
   
   return(FStat)
-  
 }
 
 

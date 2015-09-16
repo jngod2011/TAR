@@ -1,7 +1,5 @@
 # 1 black - 2 red - 3 green - 4 blue - 5 cyan - 6 magenta
 
-library(vars)
-
 myplot <- function (x, type="l") {
   plot(x, type=type, col=1)
 }
