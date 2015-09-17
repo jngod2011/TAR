@@ -10,18 +10,19 @@ myNonLinearityTest <- function(series, p=0, S=seq(1,4), k=3) {
   if(p==0) { # auto select lag order p
     p <- as.numeric(round(((VARselect(series)$selection[1]+VARselect(series)$selection[3])/2), digits = 0))
   }
-  i <- NULL
   m <- getRegimeSize(series)
   N <- length(series)
   FStatVector <- NULL
+  FStat <- NULL
   
   z <- series
+  length <- length(z)
   data <- data.frame(z)
   
   
   # generate AR dataframe, cut off lost values
   for(i in 1:p) {
-    z <- series[(1+i):(length(series)+i)]
+    z <- series[(1+i):(N+i)]
     data <- data.frame(data,z)
   }
   data <- data[1:(nrow(data)-p),]
@@ -46,7 +47,7 @@ getFStat <- function(data, m, d, p, N=N) {
   resid <- NULL
   h <- max(1, p+1-d)
   
-  data <- data[order(data[d+1]),] # arrange by threshold d, regressors stat in 2nd column, hence d+1
+  data <- data[order(data[d+1]),] # arrange by threshold variable with lag d, regr. start in 2nd column, hence d+1
   
   for (t in m:(nrow(data)-1)) {
     regime <- data[1:t,]

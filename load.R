@@ -9,15 +9,8 @@ e <- log(MEI$CCUS)
 
 df.macro <- data.frame(e, m1, y, irlt)
 longRunResiduals <- as.numeric(summary(lm(e~., data=df.macro))$residuals)
-# modelLongRunResiduals <- as.numeric(modelLongRun$residuals[2:length(modelLongRun$residuals)])
 
-
-
-
-
-
-
-
+rm(m1,m3,y,irlt,e)
 
 
 #old, probably useless, can't remember properly 
