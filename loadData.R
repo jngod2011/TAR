@@ -1,5 +1,4 @@
-library(tsDyn)
-library(vars)
+# load data
 
 m1 <- log(MEI$M1IDX_EA)-log(MEI$M1IDX_US)
 m3 <- log(MEI$M3IDX_EA)-log(MEI$M3IDX_US)
