@@ -9,91 +9,131 @@
 
 myNonLinearityTest2 <- function(series, p=0, S=1, k=3, method="MARTENS") { 
   
-  y <- as.numeric(series)
-  N <- as.numeric(length(y))
+  v.y <- as.numeric(series)
+  sc.N <- as.numeric(length(y))
   
   # auto select lag order p
   if(p==0) { 
-    p <- as.numeric(round(((VARselect(y)$selection[1]+VARselect(y)$selection[3])/2), digits = 0))
+    p <- as.numeric(round(((VARselect(v.y)$selection[1]+VARselect(v.y)$selection[3])/2), digits = 0))
   }
   
   # generate AR dataframe
-  df.y <- getAR(y)
+  df.y <- getAR(v.y)
   
   # calculate test statistc
-  StatVector <- data.frame(NULL)
+  v.fStat <- data.frame(NULL)
   
   for (d in 1:S) {
     df.z <- df.y[ order( df.y[,(d+1)] ), ] # order by threshold variable z_(t-d)
-    StatVector <- c(StatVector, getStat(df.z, d, p, method))
+    v.fStat <- c(v.fStat, getFStats(df.z, d, p, method))
   }
   
-  return(StatVector)
+  # get threshold variable with highest F-statistic
+  dMax <- which.max(as.numeric(v.fStat))
+  
+  df.z <- df.y[ order( df.y[,(dMax+1)] ), ]
+  df.tStats <- getTStats(df.z, dMax, p)
+  
+  # group threshold variable and dataframe with t-statistics from the predictive residuals
+  sc.m <- getRegimeSize(df.y)
+  df.scatter <- cbind.data.frame(df.y[sc.m:nrow(df.y),(dMax+1)], df.tStats)
+  names(df.scatter)[1] <- paste("threshold z_(t-",dMax, ")",sep = "")
+  
+  #return(as.numeric(v.fStat))
+  return(df.scatter)
 }
 
-getStat <- function(df.z, d, p, method) { # calculate predictive residuals and according F-statistic
+
+# calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
+getTStats <- function(df.z, dMax, p) {
 
   # calculate regime size
-  m <- getRegimeSize(df.z)
-  n <- as.numeric(nrow(df.z))
-  predictiveResiduals <- NULL
-  eta <- NULL
+  sc.m <- getRegimeSize(df.z)
+  sc.n <- as.numeric(nrow(df.z))
+  v.predictiveResiduals <- NULL
+  df.tStats <- data.frame(NULL)
+  
+  for (i in (sc.m-1):(sc.n-1)) {
+    df.regime <- df.z[1:i,]
+    lm.regime <- lm(y~., data = df.regime)
+    sc.predResid <- as.numeric(df.z[(i+1),1] - lm.regime$coefficients[1] - (lm.regime$coefficients[-1] %*% as.numeric(df.z[(i+1),-1])  ))
+    
+    v.tStats <- summary(lm.regime)$coefficients[,3]
+    df.tStats <- rbind.data.frame(df.tStats, v.tStats)
+  }
+
+  names(df.tStats) <- names(v.tStats)
+  names(df.tStats) <- gsub("y", "t", names(df.tStats)) # replace y with t in this vector of names
+  names(df.tStats) <- gsub("(Intercept)", "t.0", names(df.tStats)) # replace y with t in this vector of names
+  #names(df.tStats) <- gsub(c("(",")"), "", names(df.tStats)) # replace y with t in this vector of names
+
+  return(df.tStats)
+}
+
+getFStats <- function(df.z, d, p, method) { # calculate predictive residuals and according F-statistic
+
+  # calculate regime size
+  sc.m <- getRegimeSize(df.z)
+  sc.n <- as.numeric(nrow(df.z))
+  v.predictiveResiduals <- NULL
+  v.eta <- NULL
   
   # recursively calculate predictive residuals (Martens et al)
   if(method=="MARTENS") { 
-    for (i in m:n) {
+    for (i in sc.m:sc.n) {
       df.regime <- df.z[1:i,]
-      predictiveResiduals <- c(predictiveResiduals, summary(lm(y~., data=df.regime))$residuals[i])
+      v.predictiveResiduals <- c(v.predictiveResiduals, summary(lm(y~., data=df.regime))$residuals[i])
     }
   }
   
   # forecast residual of next period (Tsay)
   # decrease starting point for i by 1 to m-1 to make predictiveResiduals same length as in MARTENS method
   if(method=="TSAY") {
-    for (i in (m-1):(n-1)) {
+    for (i in (sc.m-1):(sc.n-1)) {
       df.regime <- df.z[1:i,]
       lm.regime <- lm(y~., data = df.regime)
-      predResid <- as.numeric(df.z[(i+1),1] - lm.regime$coefficients[1] - (lm.regime$coefficients[-1] %*% as.numeric(df.z[(i+1),-1])  ))
+      sc.predResid <- as.numeric(df.z[(i+1),1] - lm.regime$coefficients[1] - (lm.regime$coefficients[-1] %*% as.numeric(df.z[(i+1),-1])  ))
       
-      V <- matrix(data=0, nrow=p, ncol=p)
-      V <- solve( getSumOuterProducts(df.regime[,-1]) )
-      normalizer <- as.numeric(sqrt(1 + as.numeric(df.z[(i+1), -1]) %*% V %*% as.numeric(df.z[(i+1), -1])))
-      eta <- c(eta, predResid/normalizer)
+      mat.V <- matrix(data=0, nrow=p, ncol=p)
+      mat.V <- solve( getSumOuterProducts(df.regime[,-1]) )
+      sc.normalizer <- as.numeric(sqrt(1 + as.numeric(df.z[(i+1), -1]) %*% mat.V %*% as.numeric(df.z[(i+1), -1])))
+      v.eta <- c(v.eta, sc.predResid/sc.normalizer)
       
     }
-    predictiveResiduals <- eta
+    v.predictiveResiduals <- v.eta
+    
   }
   
   # regress predictive residuals on AR terms, check coefficients. H0: no explanatory power of AR regressors
   # hence we would have a linear model. if there is explanatory power, we prefer a TAR model
   # now the regression is predictiveResiduals~df.y[60:n,], first m-1 obs. are left out 
-  df.test <- data.frame(predictiveResiduals, df.z[m:n, 2:(ncol(df.z))])
-  estimatedResiduals <- summary(lm(predictiveResiduals~., data=df.test))$residuals
+  df.test <- data.frame(v.predictiveResiduals, df.z[m:n, 2:(ncol(df.z))])
+  v.estimatedResiduals <- summary(lm(v.predictiveResiduals~., data=df.test))$residuals
   
   
   # calculate final test statistic
   
-  myplot(predictiveResiduals, name="predictiveResiduals")
+  myplot(v.predictiveResiduals, name="predictiveResiduals")
   #mylines(eta)
   #myplot(estimatedResiduals, name="estimatedResiduals")
   
-  FStat <- ((sum(predictiveResiduals^2)-sum(estimatedResiduals^2)) / (p+1)) / (  sum(estimatedResiduals^2) / (n-d-m-p)  )
+  sc.FStat <- ((sum(predictiveResiduals^2)-sum(estimatedResiduals^2)) / (p+1)) / (  sum(estimatedResiduals^2) / (n-d-m-p)  )
   
-  S0 <- 1/(n-h-m) * sum(predictiveResiduals^2)
-  S1 <- 1/(n-h-m) * sum(estimatedResiduals^2)
-  CStat <- (n-h-m- ( (p+1)*p) + 1 ) * ( log(S0) - log(S1) )
+  sc.S0 <- 1/(n-h-m) * sum(v.predictiveResiduals^2)
+  sc.S1 <- 1/(n-h-m) * sum(v.estimatedResiduals^2)
+  sc.CStat <- (n-h-m- ( (p+1)*p) + 1 ) * ( log(sc.S0) - log(sc.S1) )
   
-  if(method=="TSAY") Stat <- CStat
-  else Stat <- FStat
+  if(method=="TSAY") sc.stat <- sc.CStat
+  else sc.stat <- sc.FStat
   
-  return(Stat)
+  return(sc.stat)
   
 }
 
 # calculate m
 getRegimeSize <- function(df, stationary=TRUE, verbose=FALSE){
-  if(stationary==TRUE) regimeSize <- round(3*sqrt(nrow(df)),0)
-  else regimeSize <- round(5*sqrt(nrow(df)),0)
+  if(stationary==TRUE) sc.regimeSize <- round(3*sqrt(nrow(df)),0)
+  else sc.regimeSize <- round(5*sqrt(nrow(df)),0)
   
   if (verbose) {
     string1 <- as.character(paste("\n"))
@@ -101,7 +141,7 @@ getRegimeSize <- function(df, stationary=TRUE, verbose=FALSE){
     string3 <- as.character(paste("   Unit Root:  suggested regime size m =",round(5*sqrt(length(series)),0),"\n\n"))
     cat(string1, string2, string3)
   }
-  return(regimeSize)
+  return(sc.regimeSize)
 }
 
 getSumOuterProducts <- function(data) {
