@@ -123,9 +123,9 @@ getFStats <- function(df.z, d, p, method) { # calculate predictive residuals and
   myplot(v.predictiveResiduals, name="predictiveResiduals")
   
   sc.FStat <- ((sum(predictiveResiduals^2)-sum(estimatedResiduals^2)) / (p+1)) / (  sum(estimatedResiduals^2) / (n-d-m-p)  )
-  sc.S0 <- 1/(n-h-m) * sum(v.predictiveResiduals^2)
-  sc.S1 <- 1/(n-h-m) * sum(v.estimatedResiduals^2)
-  sc.CStat <- (n-h-m- ( (p+1)*p) + 1 ) * ( log(sc.S0) - log(sc.S1) )
+  sc.SSR0 <- 1/(n-h-m) * sum(v.predictiveResiduals^2)
+  sc.SSR1 <- 1/(n-h-m) * sum(v.estimatedResiduals^2)
+  sc.CStat <- (n-h-m- ( (p+1)*p) + 1 ) * ( log(sc.SSR0) - log(sc.SSR1) )
   
   if(method=="TSAY") sc.stat <- sc.CStat
   else sc.stat <- sc.FStat
