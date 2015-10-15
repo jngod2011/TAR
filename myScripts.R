@@ -9,6 +9,7 @@ mylines <- function (x, type="l") {
   lines(x, type=type, col=round(runif(1,2,6),0))
 }
 
+as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
 
 getAR <- function(series, p=0) {
   N <- length(series)
