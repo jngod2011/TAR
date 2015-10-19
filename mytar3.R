@@ -7,7 +7,7 @@
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-myNonLinearityTest2 <- function(series, p=0, S=1, k=3, method="MARTENS") { 
+mj.NonLinearityTest2 <- function(series, p=0, S=1, k=3, method="MARTENS") { 
   
   v.y <- as.numeric(series)
   sc.N <- as.numeric(length(y))
@@ -40,7 +40,7 @@ myNonLinearityTest2 <- function(series, p=0, S=1, k=3, method="MARTENS") {
 
 
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getTStats <- function(df.z, dMax, p, constant=FALSE) {
+mj.getTStats <- function(df.z, dMax, p, constant=FALSE) {
 
   # calculate regime size
   sc.m <- getRegimeSize(df.z)
@@ -78,21 +78,21 @@ getTStats <- function(df.z, dMax, p, constant=FALSE) {
   return(df.tStats)
 }
 
-getFStats <- function(df.z, d, p, method) { # calculate predictive residuals and according F-statistic
+mj.getFStats <- function(df.z, d, p, method="TSAY") { # calculate predictive residuals and according F-statistic
 
   # calculate regime size
   sc.m <- getRegimeSize(df.z)
   sc.n <- as.numeric(nrow(df.z))
-  v.predictiveResiduals <- NULL
-  v.eta <- NULL
+  ve.predictiveResiduals <- NULL
+  ve.eta <- NULL
   
   # recursively calculate predictive residuals (Martens et al)
-  if(method=="MARTENS") { 
-    for (i in sc.m:sc.n) {
-      df.regime <- df.z[1:i,]
-      v.predictiveResiduals <- c(v.predictiveResiduals, summary(lm(y~., data=df.regime))$residuals[i])
-    }
-  }
+  # if(method=="MARTENS") { 
+  #  for (i in sc.m:sc.n) {
+  #    df.regime <- df.z[1:i,]
+  #    ve.predictiveResiduals <- c(ve.predictiveResiduals, summary(lm(y~., data=df.regime))$residuals[i])
+  #  }
+  # }
   
   # forecast residual of next period (Tsay)
   # decrease starting point for i by 1 to m-1 to make predictiveResiduals same length as in MARTENS method
@@ -120,7 +120,7 @@ getFStats <- function(df.z, d, p, method) { # calculate predictive residuals and
   
   
   # calculate final test statistic
-  myplot(v.predictiveResiduals, name="predictiveResiduals")
+  mj.plot(v.predictiveResiduals, name="predictiveResiduals")
   
   sc.FStat <- ((sum(predictiveResiduals^2)-sum(estimatedResiduals^2)) / (p+1)) / (  sum(estimatedResiduals^2) / (n-d-m-p)  )
   sc.SSR0 <- 1/(n-h-m) * sum(v.predictiveResiduals^2)
@@ -134,7 +134,7 @@ getFStats <- function(df.z, d, p, method) { # calculate predictive residuals and
 }
 
 # calculate m
-getRegimeSize <- function(df, stationary=TRUE, verbose=FALSE){
+mj.getRegimeSize <- function(df, stationary=TRUE, verbose=FALSE){
   if(stationary==TRUE) sc.regimeSize <- round(3*sqrt(nrow(df)),0)
   else sc.regimeSize <- round(5*sqrt(nrow(df)),0)
   
@@ -147,7 +147,7 @@ getRegimeSize <- function(df, stationary=TRUE, verbose=FALSE){
   return(sc.regimeSize)
 }
 
-getSumOuterProducts <- function(data) {
+mj.getSumOuterProducts <- function(data) {
   V <- matrix(0, nrow=ncol(data), ncol=ncol(data))
   
   for(i in 1:nrow(data)) {

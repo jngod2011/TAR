@@ -1,17 +1,17 @@
 # 1 black - 2 red - 3 green - 4 blue - 5 cyan - 6 magenta
 
-myplot <- function (x, type="l", name="") {
+mj.plot <- function (x, type="l", name="") {
   obs <- paste(name, ", n = ", length(x))
   plot(x, type=type, col=1, xlab=obs)
 }
 
-mylines <- function (x, type="l") {
+mj.lines <- function (x, type="l") {
   lines(x, type=type, col=round(runif(1,2,6),0))
 }
 
-as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
+mj.as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
 
-getAR <- function(series, p=0) {
+mj.getAR <- function(series, p=0) {
   N <- length(series)
   y <- series
   if(p==0) {
@@ -30,7 +30,7 @@ getAR <- function(series, p=0) {
 }
 
 
-mylag <- function(series, lag=1) {
+mj.lag <- function(series, lag=1) {
   data <- c(series[(lag+1):length(series)],rep(NA,lag))
   return(data)
 }
