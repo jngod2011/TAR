@@ -1,26 +1,33 @@
 # p .. lag order 
 # d .. particular threshold lag
-# S .. set of threshold lags
+# S .. max threshold lag
 # k .. number of regimes
 # m .. regime starting size
-# N .. original sample size+
+# N .. original sample size
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-testLinearity <- function(ve.series, p=0, S=1, k=3, method="MARTENS") { 
+testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS") { 
   
   ve.y <- as.numeric(ve.series)
   N <- as.numeric(length(ve.y))
   
   # auto select lag order p
-  if(p==0) { 
-    p <- as.numeric(round(((VARselect(ve.y)$selection[1] + VARselect(ve.y)$selection[3]) / 2), digits = 0))
+  if (p == 0) { 
+    p <- getOptimalLagOrder(ve.y)
   }
   
-  # generate AR dataframe
+  if (S == 0) {
+    S <- p
+  } else if (S > p) {
+    S <- min(p, S)    # avoid adressing undefined columns
+    cat("S restricted to max value p = ", p, sep = "")
+  }
+  
+  # generate AR dataframe of order p
   df.y <- getAR(ve.y, p)
   
-  # calculate test statistc
+  # calculate F-test statistic 
   ve.FStats <- data.frame(NULL)
   
   for (d in 1:S) {
@@ -35,9 +42,15 @@ testLinearity <- function(ve.series, p=0, S=1, k=3, method="MARTENS") {
   df.scatter <- getTStats(df.z, dMax, p)
   names(df.scatter)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
   
-  return(ve.FStats)
+  cat("\n", as.character(ve.FStats), sep="\n")
+  #return(ve.FStats)
+  return(df.scatter)
 }
 
+getOptimalLagOrder <- function(ve.series) {
+  p <- as.numeric(round(((VARselect(ve.series)$selection[1] + VARselect(ve.series)$selection[3]) / 2), digits = 0))
+  return(p)
+}
 
 getFStat <- function(df.z, d, p, method="TSAY") { # calculate predictive residuals and according F-statistic
 
@@ -133,7 +146,7 @@ getSumOuterProducts <- function(data) {
 
 
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getTStats <- function(df.z, dMax, p, constant=TRUE) {
+getTStats <- function(df.z, dMax, p, constant = FALSE) {
   
   # calculate regime size
   m <- getRegimeSize(df.z)
@@ -159,7 +172,7 @@ getTStats <- function(df.z, dMax, p, constant=TRUE) {
   else if (constant==FALSE) {
     for (i in (m - 1):(n - 1)) {
       df.regime <- df.z[1:i, ]
-      lm.regime <- lm(y ~ .-1, data = df.regime)
+      lm.regime <- lm(ve.y ~ .-1, data = df.regime)
       predResid <- as.numeric(df.z[(i + 1), 1] - (lm.regime$coefficients %*% as.numeric(df.z[(i + 1), -1])  ))
       
       ve.tStats <- summary(lm.regime)$coefficients[, 3]

@@ -1,10 +1,13 @@
 # remove objects with a similar name
-rm(list = ls(pattern = "^tmp"))
+rm(list = ls(pattern = "^mj"))
+
+# vector products
+a %*% b     # inner: returns scalar
+a %o% b     # outer: returns nxn matrix
 
 # modulo operator
-45%%9  # for remainder
-45%/%9  # for quotient
-
+45%%9       # for remainder
+45%/%9      # for quotient
 
 ######## UR Analyse
 # manuell DF mit drift

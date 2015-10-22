@@ -93,15 +93,6 @@ ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
 
-m1 <- log(MEI$M1IDX_EA)-log(MEI$M1IDX_US)
-m3 <- log(MEI$M3IDX_EA)-log(MEI$M3IDX_US)
-y <- log(MEI$GDPIDX_US)-log(MEI$GDPIDX_EA)
-irlt <- MEI$IRLT_EA-MEI$IRLT_US
-e <- log(MEI$CCUS)
-
-m.lr <- summary(lm(e~m1+y+irlt))
-m.lr.resid <- as.numeric(lm1$residuals[2:length(lm1$residuals)])
-de <- diff(e)
 
 
 
