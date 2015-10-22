@@ -1,17 +1,29 @@
 # 1 black - 2 red - 3 green - 4 blue - 5 cyan - 6 magenta
 
-mj.plot <- function (ve.series, type="l", name="") {
+mj.plot <- function (ve.series, type = "l", name = "") {
   obs <- paste(name, ", n = ", length(ve.series))
   plot(ve.series, type = type, col = 1, xlab = obs)
 }
 
-mj.lines <- function (ve.series, type="l") {
+mj.lines <- function (ve.series, type = "l") {
   lines(ve.series, type = type, col = round(runif(1, 2, 6), 0))
 }
 
+mj.multiPlot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
+  par(mfrow = c((ncol(df.data) - 1), 1))
+  par(mar=c(3.5, 3.5, 1, 1.5))          # bottom, left, top, right
+  for (i in 2:(ncol(df.data))) {
+    plot(df.data[, 1], df.data[, i], type = type, pch=5, cex.axis = 0.7, cex.lab = 0.7, 
+         mgp=c(2.5, 0.6, 0), las = 1)     # 1.6 label, 0.6 tick labels, 0 ticks
+  }
+  
+  par(mfrow = c(1, 1))
+}
+
+
 as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
 
-getAR <- function(ve.series, p=0) {
+getAR <- function(ve.series, p = 0) {
   N <- length(ve.series)
   ve.y <- ve.series
   if (p == 0) {

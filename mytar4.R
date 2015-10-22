@@ -17,10 +17,11 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS") {
     p <- getOptimalLagOrder(ve.y)
   }
   
+  # restrict threshold order to a maximum value of the AR order
   if (S == 0) {
     S <- p
   } else if (S > p) {
-    S <- min(p, S)    # avoid adressing undefined columns
+    S <- min(p, S)
     cat("S restricted to max value p = ", p, sep = "")
   }
   
@@ -31,30 +32,30 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS") {
   ve.FStats <- data.frame(NULL)
   
   for (d in 1:S) {
-    df.z <- df.y[order(df.y[, (d + 1)] ), ] # order by threshold variable z_(t-d)
-    ve.FStats <- c(ve.FStats, getFStat(df.z, d, p, method))
+    ve.FStats <- c(ve.FStats, getFStat(df.y, d, p, method))
   }
   
   # get threshold variable with highest F-statistic
   dMax <- which.max(as.numeric(ve.FStats))
   
-  df.z <- df.y[order(df.y[, (dMax + 1)]), ]
-  df.scatter <- getTStats(df.z, dMax, p)
-  names(df.scatter)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
+  # get t-statistics for each coefficient according to the threshold variable yielding the highest F-statistic
+  df.tStats <- getTStats(df.y, dMax, p)
+  names(df.tStats)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
   
-  cat("\n", as.character(ve.FStats), sep="\n")
+  # print output
+  for (i in 1:length(ve.FStats)) {
+    cat("\nF-statistic ", i, ": ", as.character(ve.FStats[i]), sep="")
+  }
+  
   #return(ve.FStats)
-  return(df.scatter)
+  return(df.tStats)
 }
 
-getOptimalLagOrder <- function(ve.series) {
-  p <- as.numeric(round(((VARselect(ve.series)$selection[1] + VARselect(ve.series)$selection[3]) / 2), digits = 0))
-  return(p)
-}
 
-getFStat <- function(df.z, d, p, method="TSAY") { # calculate predictive residuals and according F-statistic
-
-  # calculate regime size
+# calculate F statistics according to different threshold lags
+getFStat <- function(df.y, d, p, method="TSAY") { # calculate predictive residuals and according F-statistic
+  
+  df.z <- df.y[order(df.y[, (d + 1)] ), ] # order by threshold variable z_(t-d)
   m <- getRegimeSize(df.z)
   n <- as.numeric(nrow(df.z))
   h <- max(1, p+1-d)
@@ -113,6 +114,12 @@ getFStat <- function(df.z, d, p, method="TSAY") { # calculate predictive residua
 }
 
 
+# calculate optimal lag order based on AIC, SC
+getOptimalLagOrder <- function(ve.series) {
+  p <- as.numeric(round(((VARselect(ve.series)$selection[1] + VARselect(ve.series)$selection[3]) / 2), digits = 0))
+  return(p)
+}
+
 
 # calculate m
 getRegimeSize <- function(df, stationary = TRUE, verbose = FALSE){
@@ -143,18 +150,15 @@ getSumOuterProducts <- function(data) {
 }
 
 
-
-
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getTStats <- function(df.z, dMax, p, constant = FALSE) {
-  
-  # calculate regime size
+getTStats <- function(df.y, dMax, p, constant = FALSE) {
+  df.z <- df.y[order(df.y[, (dMax + 1)]), ]
   m <- getRegimeSize(df.z)
   n <- as.numeric(nrow(df.z))
   ve.predictiveResiduals <- NULL
   df.tStats <- data.frame(NULL)
   
-  if (constant==TRUE) {
+  if (constant == TRUE) {
     for (i in (m - 1):(n - 1)) {
       df.regime <- df.z[1:i, ]
       lm.regime <- lm(ve.y ~ ., data = df.regime)
@@ -167,9 +171,7 @@ getTStats <- function(df.z, dMax, p, constant = FALSE) {
       ve.tStats <- summary(lm.regime)$coefficients[, 3]
       df.tStats <- rbind.data.frame(df.tStats, ve.tStats)
     }
-  }
-  
-  else if (constant==FALSE) {
+  } else if (constant==FALSE) {
     for (i in (m - 1):(n - 1)) {
       df.regime <- df.z[1:i, ]
       lm.regime <- lm(ve.y ~ .-1, data = df.regime)
@@ -186,6 +188,4 @@ getTStats <- function(df.z, dMax, p, constant = FALSE) {
   
   return(df.tStats)
 }
-
-
 
