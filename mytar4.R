@@ -7,7 +7,7 @@
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS") { 
+testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS", stationary = TRUE) { 
   
   ve.y <- as.numeric(ve.series)
   N <- as.numeric(length(ve.y))
@@ -32,31 +32,32 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS") {
   ve.FStats <- data.frame(NULL)
   
   for (d in 1:S) {
-    ve.FStats <- c(ve.FStats, getFStat(df.y, d, p, method))
+    ve.FStats <- c(ve.FStats, getFStat(df.y, d, p, method, stationary))
   }
   
   # get threshold variable with highest F-statistic
   dMax <- which.max(as.numeric(ve.FStats))
   
   # get t-statistics for each coefficient according to the threshold variable yielding the highest F-statistic
-  df.tStats <- getTStats(df.y, dMax, p)
+  df.tStats <- getTStats(df.y, dMax, p, stationary)
   names(df.tStats)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
   
   # print output
   for (i in 1:length(ve.FStats)) {
     cat("\nF-statistic ", i, ": ", as.character(ve.FStats[i]), sep="")
   }
+  cat("\n\n")
   
-  #return(ve.FStats)
-  return(df.tStats)
+  return(ve.FStats)
+  #return(df.tStats)
 }
 
 
 # calculate F statistics according to different threshold lags
-getFStat <- function(df.y, d, p, method="TSAY") { # calculate predictive residuals and according F-statistic
+getFStat <- function(df.y, d, p, method="TSAY", stationary=TRUE) { # calculate predictive residuals and according F-statistic
   
   df.z <- df.y[order(df.y[, (d + 1)] ), ] # order by threshold variable z_(t-d)
-  m <- getRegimeSize(df.z)
+  m <- getRegimeSize(df.z, stationary)
   n <- as.numeric(nrow(df.z))
   h <- max(1, p+1-d)
   ve.predictiveResiduals <- NULL
@@ -122,7 +123,7 @@ getOptimalLagOrder <- function(ve.series) {
 
 
 # calculate m
-getRegimeSize <- function(df, stationary = TRUE, verbose = FALSE){
+getRegimeSize <- function(df, stationary=TRUE, verbose = FALSE) {
   if (stationary == TRUE) regimeSize <- round(3 * sqrt(nrow(df)), 0)
   else regimeSize <- round(5 * sqrt(nrow(df)), 0)
   
@@ -151,9 +152,9 @@ getSumOuterProducts <- function(data) {
 
 
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getTStats <- function(df.y, dMax, p, constant = FALSE) {
+getTStats <- function(df.y, dMax, p, constant = FALSE, stationary=TRUE) {
   df.z <- df.y[order(df.y[, (dMax + 1)]), ]
-  m <- getRegimeSize(df.z)
+  m <- getRegimeSize(df.z, stationary)
   n <- as.numeric(nrow(df.z))
   ve.predictiveResiduals <- NULL
   df.tStats <- data.frame(NULL)
