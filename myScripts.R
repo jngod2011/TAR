@@ -10,14 +10,16 @@ mj.lines <- function (ve.series, type = "l") {
 }
 
 mj.multiPlot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
-  par(mfrow = c((ncol(df.data) - 1), 1))
-  par(mar=c(3.5, 3.5, 1, 1.5))          # bottom, left, top, right
-  for (i in 2:(ncol(df.data))) {
-    plot(df.data[, 1], df.data[, i], type = type, pch=5, cex.axis = 0.7, cex.lab = 0.7, 
-         mgp=c(2.5, 0.6, 0), las = 1)     # 1.6 label, 0.6 tick labels, 0 ticks
-  }
-  
-  par(mfrow = c(1, 1))
+	pdf(file = "1.pdf", paper = "A4", width=7, height=10)
+	par(mfrow = c((ncol(df.data) - 1), 1))
+	par(mar=c(3.5, 3.5, 1, 1.5))          # bottom, left, top, right
+	for (i in 2:(ncol(df.data))) {
+		plot(df.data[, 1], df.data[, i], type = type, pch=5, cex.axis = 0.7, cex.lab = 0.7, 
+				mgp=c(2.5, 0.6, 0), las = 1)     # 1.6 label, 0.6 tick labels, 0 ticks
+	}
+	
+	par(mfrow = c(1, 1))
+	dev.off()
 }
 
 

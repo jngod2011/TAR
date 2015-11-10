@@ -7,7 +7,7 @@
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS", stationary = TRUE) { 
+testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS", stationary = TRUE, decreasing = FALSE) { 
 	
 	ve.y <- as.numeric(ve.series)
 	N <- as.numeric(length(ve.y))
@@ -39,7 +39,7 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS", st
 	dMax <- which.max(as.numeric(ve.FStats))
 	
 	# get t-statistics for each coefficient according to the threshold variable yielding the highest F-statistic
-	df.tStats <- getTStats(df.y, dMax, p, stationary)
+	df.tStats <- getTStats(df.y, dMax, p, stationary, decreasing = decreasing)
 	names(df.tStats)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
 	
 	# print output
@@ -48,13 +48,13 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, method = "MARTENS", st
 	}
 	cat("\n\n")
 	
-	return(ve.FStats)
-	#return(df.tStats)
+	#return(ve.FStats)
+	return(df.tStats)
 }
 
 
 # calculate F statistics according to different threshold lags
-getFStat <- function(df.y, d, p, method="TSAY", stationary=TRUE) { # calculate predictive residuals and according F-statistic
+getFStat <- function(df.y, d, p, method = "TSAY", stationary = TRUE) { # calculate predictive residuals and according F-statistic
 	
 	df.z <- df.y[order(df.y[, (d + 1)] ), ] # order by threshold variable z_(t-d)
 	m <- getRegimeSize(df.z, stationary)
@@ -73,7 +73,7 @@ getFStat <- function(df.y, d, p, method="TSAY", stationary=TRUE) { # calculate p
 	
 	# forecast residual of next period (Tsay)
 	# decrease starting point for i by 1 to m-1 to make predictiveResiduals same length as in MARTENS method
-	if (method=="TSAY") {
+	if (method == "TSAY") {
 		for (i in (m - 1):(n - 1)) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ ., data = df.regime)
@@ -108,7 +108,7 @@ getFStat <- function(df.y, d, p, method="TSAY", stationary=TRUE) { # calculate p
 	SSR1 <- 1 / (n - h - m) * sum(ve.estimatedResiduals^2)
 	FStatTsay <- (n - h - m - ((p + 1) * p) + 1) * (log(SSR0) - log(SSR1))
 	
-	if (method=="TSAY") FStat <- FStatTsay
+	if (method == "TSAY") FStat <- FStatTsay
 	else FStat <- FStatMartens
 	
 	return(FStat)
@@ -118,19 +118,20 @@ getFStat <- function(df.y, d, p, method="TSAY", stationary=TRUE) { # calculate p
 # calculate optimal lag order based on AIC, SC
 getOptimalLagOrder <- function(ve.series) {
 	p <- as.numeric(round(((VARselect(ve.series)$selection[1] + VARselect(ve.series)$selection[3]) / 2), digits = 0))
+	
 	return(p)
 }
 
 
 # calculate m
-getRegimeSize <- function(df, stationary=TRUE, verbose = FALSE) {
+getRegimeSize <- function(df, stationary = TRUE, verbose = FALSE) {
 	if (stationary == TRUE) regimeSize <- round(3 * sqrt(nrow(df)), 0)
 	else regimeSize <- round(5 * sqrt(nrow(df)), 0)
 	
 	if (verbose) {
 		string1 <- as.character(paste("\n"))
-		string2 <- as.character(paste("   Stationary: suggested regime size m =",round(3*sqrt(length(series)),0),"\n"))
-		string3 <- as.character(paste("   Unit Root:  suggested regime size m =",round(5*sqrt(length(series)),0),"\n\n"))
+		string2 <- as.character(paste("   Stationary: suggested regime size m =", round(3 * sqrt(length(series)), 0), "\n"))
+		string3 <- as.character(paste("   Unit Root:  suggested regime size m =", round(5 * sqrt(length(series)), 0), "\n\n"))
 		cat(string1, string2, string3)
 	}
 	
@@ -152,8 +153,8 @@ getSumOuterProducts <- function(data) {
 
 
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getTStats <- function(df.y, dMax, p, constant = FALSE, stationary=TRUE) {
-	df.z <- df.y[order(df.y[, (dMax + 1)]), ]
+getTStats <- function(df.y, dMax, p, constant = FALSE, stationary = TRUE, decreasing = FALSE) {
+	df.z <- df.y[order(df.y[, (dMax + 1)], decreasing = decreasing), ]
 	m <- getRegimeSize(df.z, stationary)
 	n <- as.numeric(nrow(df.z))
 	ve.predictiveResiduals <- NULL
@@ -172,7 +173,7 @@ getTStats <- function(df.y, dMax, p, constant = FALSE, stationary=TRUE) {
 			ve.tStats <- summary(lm.regime)$coefficients[, 3]
 			df.tStats <- rbind.data.frame(df.tStats, ve.tStats)
 		}
-	} else if (constant==FALSE) {
+	} else if (constant == FALSE) {
 		for (i in (m - 1):(n - 1)) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ .-1, data = df.regime)
