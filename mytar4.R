@@ -159,18 +159,17 @@ getTStats <- function(df.y, dMax, p, constant = FALSE, stationary = TRUE, decrea
 	n <- as.numeric(nrow(df.z))
 	ve.predictiveResiduals <- NULL
 	df.tStats <- data.frame(NULL)
-	
+	df.estimates <- data.frame(NULL)
+    
 	if (constant == TRUE) {
 		for (i in (m - 1):(n - 1)) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ ., data = df.regime)
 			predResid <- as.numeric(
-					df.z[(i + 1), 1] -
-							lm.regime$coefficients[1] -
-							(lm.regime$coefficients[-1] %*% as.numeric(df.z[(i + 1), -1]))
+					df.z[(i + 1), 1] - lm.regime$coefficients[1] - (lm.regime$coefficients[-1] %*% as.numeric(df.z[(i + 1), -1]))
 			)
-			
-			ve.tStats <- summary(lm.regime)$coefficients[, 3]
+
+            ve.tStats <- summary(lm.regime)$coefficients[, 3]
 			df.tStats <- rbind.data.frame(df.tStats, ve.tStats)
 		}
 	} else if (constant == FALSE) {
