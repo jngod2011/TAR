@@ -9,7 +9,7 @@ mj.lines <- function (ve.series, type = "l") {
   lines(ve.series, type = type, col = round(runif(1, 2, 6), 0))
 }
 
-mj.multiPlot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
+mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
 	#pdf(file = "111.pdf", paper = "A4", width=7, height=10)
     if (from == -1) from <- 2
     if (to == -1) to <- ncol(df.data)

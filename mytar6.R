@@ -18,7 +18,7 @@ testLinearity <- function(ve.series, p = 0, S = 0, constant = FALSE, stationary 
 	# auto select lag order p
 	if (p == 0) { 
 		p <- getOptimalLagOrder(ve.y, verbose)
-	}
+    }
     
 	# restrict threshold order to a maximum value of the AR order
 	if (S == 0) {
