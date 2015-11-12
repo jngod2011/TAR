@@ -59,7 +59,7 @@ getFStat <- function(df.y, d, p, method = "TSAY", stationary = TRUE) { # calcula
 	df.z <- df.y[order(df.y[, (d + 1)] ), ] # order by threshold variable z_(t-d)
 	m <- getRegimeSize(df.z, stationary)
 	n <- as.numeric(nrow(df.z))
-	h <- max(1, p+1-d)
+	h <- max(1, p + 1 - d)
 	ve.predictiveResiduals <- NULL
 	ve.eta <- NULL
 	
@@ -67,7 +67,7 @@ getFStat <- function(df.y, d, p, method = "TSAY", stationary = TRUE) { # calcula
 	if (method == "MARTENS") { 
 		for (i in m:n) {
 			df.regime <- df.z[1:i, ]
-			ve.predictiveResiduals <- c(ve.predictiveResiduals, summary(lm(ve.y ~ ., data=df.regime))$residuals[i])
+			ve.predictiveResiduals <- c(ve.predictiveResiduals, summary(lm(ve.y ~ ., data = df.regime))$residuals[i])
 		}
 	}
 	
@@ -162,7 +162,6 @@ getScatter <- function(df.y, dMax, p, constant = constant, stationary = TRUE, de
 	df.estimates <- data.frame(NULL)
     
 	if (constant == TRUE) {
-        cat("constant is TRUE")
 		for (i in (m - 1):(n - 1)) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ ., data = df.regime)
@@ -174,7 +173,6 @@ getScatter <- function(df.y, dMax, p, constant = constant, stationary = TRUE, de
         names(ve.tStats)[1] <- "ve.y.0"            # rename (Intercept) to ve.y.0 like the other coefficients
         names(ve.estimates)[1] <- "ve.y.0" 
 	} else if (constant == FALSE) {
-        cat("constant is FALSE")
 		for (i in (m - 1):(n - 1)) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ .-1, data = df.regime)
