@@ -7,7 +7,8 @@
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-testLinearity <- function(ve.series, p = 0, S = 0, k = 3, constant = FALSE, method = "MARTENS", stationary = TRUE, decreasing = FALSE) { 
+testLinearity <- function(ve.series, p = 0, S = 0, k = 3, constant = FALSE, method = "MARTENS", stationary = TRUE, 
+		decreasing = FALSE) { 
 	
 	ve.y <- as.numeric(ve.series)
 	N <- as.numeric(length(ve.y))
@@ -32,7 +33,7 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, constant = FALSE, meth
 	ve.FStats <- data.frame(NULL)
 	
 	for (d in 1:S) {
-		ve.FStats <- c(ve.FStats, getFStat(df.y, d, p, method, stationary))
+		ve.FStats <- c(ve.FStats, getFStat(df.y, d, p, method = method, stationary = stationary))
 	}
 	
 	# get threshold variable with highest F-statistic
@@ -42,19 +43,12 @@ testLinearity <- function(ve.series, p = 0, S = 0, k = 3, constant = FALSE, meth
 	df.scatter <- getScatter(df.y, dMax, p, constant = constant, stationary = stationary, decreasing = decreasing)
 	names(df.scatter)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
 	
-	# print output
-	for (i in 1:length(ve.FStats)) {
-		cat("\nF-statistic ", i, ": ", as.character(ve.FStats[i]), sep="")
-	}
-	cat("\n\n")
-	
-	#return(ve.FStats)
-	return(df.scatter)
+	return(list(ve.FStats = ve.FStats, df.scatter = df.scatter))
 }
 
 
 # calculate F statistics according to different threshold lags
-getFStat <- function(df.y, d, p, method = "TSAY", stationary = TRUE) { # calculate predictive residuals and according F-statistic
+getFStat <- function(df.y, d, p, method = "TSAY", stationary = TRUE) { 
 	
 	df.z <- df.y[order(df.y[, (d + 1)] ), ] # order by threshold variable z_(t-d)
 	m <- getRegimeSize(df.z, stationary)
