@@ -1,5 +1,8 @@
-# V6: return list object now, make functions more modular, i.e. less cross-interactions; return decreasing and increasing
-# data for scatterplots, removed TSAY method
+# V6: 
+# - return list object now
+# - make functions more modular, i.e. less cross-interactions
+# - automatically return BOTH decreasing and increasing data for scatterplots  
+# - removed TSAY method
 #
 # p .. lag order 
 # d .. particular threshold lag
@@ -133,7 +136,7 @@ getSumOuterProducts <- function(data) {
 
 
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getScatter <- function(df.y, dMax, p, constant = constant, stationary, decreasing, m) {
+getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 	df.z <- df.y[order(df.y[, (dMax + 1)], decreasing = decreasing), ]
 	n <- as.numeric(nrow(df.z))
 	ve.predictiveResiduals <- NULL
