@@ -19,7 +19,7 @@ mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
 	par(mar=c(3.8, 4.3, 1, 1.5))          # bottom, left, top, right
 	for (i in from:to) {
         string = 
-		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, cex.axis = 1.3, cex.lab = 1.4, 
+		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, cex.axis = 0.8, cex.lab = 1.0, 
 				mgp = c(2.6, 0.6, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks
                 xlab = names(df.data)[1], ylab = names(df.data)[i])
 	}

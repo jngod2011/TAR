@@ -142,6 +142,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 	ve.predictiveResiduals <- NULL
 	df.tStats <- data.frame(NULL)
 	df.estimates <- data.frame(NULL)
+    ve.RSquared <- NULL
     
 	if (constant == TRUE) {
 		for (i in (m - 1):(n - 1)) {
@@ -150,7 +151,8 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 			ve.tStats <- summary(lm.regime)$coefficients[, 3]
 			df.tStats <- rbind.data.frame(df.tStats, ve.tStats)
             ve.estimates <- summary(lm.regime)$coefficients[, 1]
-            df.estimates <- rbind.data.frame(df.estimates, ve.estimates)            
+            df.estimates <- rbind.data.frame(df.estimates, ve.estimates)
+            ve.RSquared <- c(ve.RSquared, summary(lm.regime)$r.squared)
 		}
         names(ve.tStats)[1] <- "ve.y.0"            # rename (Intercept) to ve.y.0 like the other coefficients
         names(ve.estimates)[1] <- "ve.y.0" 
@@ -162,6 +164,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 			df.tStats <- rbind.data.frame(df.tStats, ve.tStats)
             ve.estimates <- summary(lm.regime)$coefficients[, 1]
             df.estimates <- rbind.data.frame(df.estimates, ve.estimates)
+            ve.RSquared <- c(ve.RSquared, summary(lm.regime)$r.squared)
 		}
 	}
 	
@@ -170,7 +173,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
     names(df.estimates) <- names(ve.estimates)
     names(df.estimates) <- gsub("y", "e", names(df.estimates)) # replace y with e in this vector of names for the estimates
 	
-    df.scatter <- cbind.data.frame(df.regime[-(1:(m - 2)), (dMax + 1)], df.tStats, df.estimates) # combine threshold variable and dataframes
+    df.scatter <- cbind.data.frame(df.regime[-(1:(m - 2)), (dMax + 1)], df.tStats, df.estimates, ve.RSquared) # combine threshold variable and dataframes
     names(df.scatter)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
 	
     return(df.scatter)
