@@ -4,6 +4,13 @@
 # - automatically return BOTH decreasing and increasing data for scatterplots
 # - removed TSAY method
 #
+# V7: 
+# - remove getSumOuterProducts()
+# - added R^2 output to scatterplot 
+# - add getThresholds()
+#
+#
+#
 # p .. lag order 
 # d .. particular threshold lag
 # S .. max threshold lag
@@ -52,7 +59,11 @@ testLinearity <- function(ve.series, p = 0, S = 0, constant = FALSE, stationary 
 }
 
 # calculate thresholds
-getThresholds <- function() {
+getThresholds <- function(ve.series, p = 0, d = 0, range = 0, ve.thresholdLag, ve.RSquared) {
+    if (range == 0) range = 2 * round(log(length(ve.series)), 0)  # range is a logarithmic function of the length of the series
+    if (p == 0) p <- getOptimalLagOrder(ve.series)
+    df.thresholds <- data.frame(ve.thresholdLag, ve.RSquared)
+    df.AR <- getAR(ve.series, p)
     
 }
 
@@ -128,19 +139,6 @@ getRegimeSize <- function(df, stationary, verbose) {
 }
 
 
-# Sum Outer Products
-getSumOuterProducts <- function(data) {
-	ma.V <- matrix(0, nrow = ncol(data), ncol = ncol(data))
-	
-	for(i in 1:nrow(data)) {
-		ve.X <- as.numeric(data[i, ])
-		ma.V <- ma.V + (ve.X %o% ve.X)
-	}
-	
-	return(ma.V)
-}
-
-
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
 getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 	df.z <- df.y[order(df.y[, (dMax + 1)], decreasing = decreasing), ]
@@ -180,7 +178,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
     names(df.estimates) <- gsub("y", "e", names(df.estimates)) # replace y with e in this vector of names for the estimates
 	
     df.scatter <- cbind.data.frame(df.regime[-(1:(m - 2)), (dMax + 1)], df.tStats, df.estimates, ve.RSquared) # combine threshold variable and dataframes
-    names(df.scatter)[1] <- paste("threshold z_(t-", dMax, ")", sep = "")
+    names(df.scatter)[1] <- paste("threshold z_(t-", dMax, ")", sep = "") # rename threshold
 	
     return(df.scatter)
 }
