@@ -58,15 +58,6 @@ testLinearity <- function(ve.series, p = 0, S = 0, constant = FALSE, stationary 
                     df.scatterIncreasing = df.scatterIncreasing))
 }
 
-# calculate thresholds
-getThresholds <- function(ve.series, p = 0, d = 0, range = 0, ve.thresholdLag, ve.RSquared) {
-    if (range == 0) range = 2 * round(log(length(ve.series)), 0)  # range is a logarithmic function of the length of the series
-    if (p == 0) p <- getOptimalLagOrder(ve.series)
-    df.thresholds <- data.frame(ve.thresholdLag, ve.RSquared)
-    df.AR <- getAR(ve.series, p)
-    
-}
-
 
 
 # calculate F statistics according to different threshold lags

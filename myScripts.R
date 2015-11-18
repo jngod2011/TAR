@@ -10,7 +10,7 @@ mj.lines <- function (ve.series, type = "l") {
   lines(ve.series, type = type, col = round(runif(1, 2, 6), 0))
 }
 
-mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
+mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1, col = 1) {
 	#pdf(file = "111.pdf", paper = "A4", width=7, height=10)
     dev.new()
     if (from == -1) from <- 2
@@ -21,7 +21,8 @@ mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1) {
         string = 
 		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, cex.axis = 0.8, cex.lab = 1.0, 
 				mgp = c(2.6, 0.6, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks
-                xlab = names(df.data)[1], ylab = names(df.data)[i])
+                xlab = names(df.data)[1], ylab = names(df.data)[i],
+                col = col)
 	}
 	
 	par(mfrow = c(1, 1))
