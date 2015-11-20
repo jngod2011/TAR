@@ -11,6 +11,14 @@ getMappedIndex <- function(domain, ve.domain, ve.range) {
     return(which(ve.domain[domain] == ve.range))
 }
 
+getRegimeIndices <- function(ve.splits, total) {
+    ve.splits <- as.numeric(unlist(c(0, ve.splits, total)))
+    list.data <- foreach (i = 1:(length(ve.splits) - 1)) %do% {
+        seq(from = (ve.splits[i] + 1), to = ve.splits[i + 1])
+    }
+    return(list.data)
+}
+
 # if decreasing = FALSE, regimes will be split with a < sign
 # if decreasing = TRUE, regimes will be split with a > sign
 getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 10) {
@@ -24,15 +32,20 @@ getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSiz
     }
     
     df.cartesian <- expand.grid(df.gridIndices)
-    
-    
-    ve.aggregateRSquared <- foreach(i = 1:ncol(df.cartesian), .combine = 'c') %do% {
+    nrowCartesian <- nrow(df.cartesian)
+    numberRegimes <- ncol(df.cartesian) + 1
         
+    ve.sumRSquared <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
+        sumRSquared <- 0
+        ve.splits <- df.cartesian[i, ]
+        list.regimeIndices <- getRegimeIndices(ve.splits, nrowCartesian)
+        for (j in 1:numberRegimes) {
+            sumRSquared <- sumRSquared + summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))$r.squared
+        }
+        ve.sumRSquared[i] <- sumRSquared
     }
-    
-    return(df.cartesian)
-    
-    
+        
+    return(df.cartesian[which.max(ve.sumRSquared), ])
 }
 
 
