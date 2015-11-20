@@ -19,8 +19,8 @@ mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1, co
 	par(mar=c(3.8, 4.3, 1, 1.5))          # bottom, left, top, right
 	for (i in from:to) {
         string = 
-		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, cex.axis = 0.8, cex.lab = 1.0, 
-				mgp = c(2.6, 0.6, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks
+		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, cex.axis = 0.8, cex.lab = 0.8, 
+				mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
                 xlab = names(df.data)[1], ylab = names(df.data)[i],
                 col = col)
 	}
