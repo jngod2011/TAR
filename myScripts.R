@@ -3,14 +3,14 @@
 mj.plot <- function (ve.series, type = "l", name = "") {
     dev.new()
     obs <- paste(name, ", n = ", length(ve.series))
-    plot(ve.series, type = type, col = 1, xlab = obs)
+    plot(ve.series, type = type, col = 1, xlab = obs, las = 1, cex.axis = 0.8, cex.lab = 0.8, mgp = c(2.6, 0.8, 0))
 }
 
 mj.lines <- function (ve.series, type = "l") {
   lines(ve.series, type = type, col = round(runif(1, 2, 6), 0))
 }
 
-mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1, col = 1) {
+mj.multiplot <- function (df.data, type = "b", name = "", from = 2, to = 2, col = 1, ve.points = 1, new = FALSE) {
 	#pdf(file = "111.pdf", paper = "A4", width=7, height=10)
     dev.new()
     if (from == -1) from <- 2
@@ -23,10 +23,11 @@ mj.multiplot <- function (df.data, type = "b", name = "", from = -1, to = -1, co
 				mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
                 xlab = names(df.data)[1], ylab = names(df.data)[i],
                 col = col)
+        for (j in 1:length(ve.points)) points(df.data[ve.points[j], 1], df.data[ve.points[j], i], pch = 3, col = 2)
 	}
 	
-	par(mfrow = c(1, 1))
-	#dev.off()
+    par(mfrow = c(1, 1))
+	if (!new) dev.off()
 }
 
 

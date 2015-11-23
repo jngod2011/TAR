@@ -19,9 +19,9 @@ getRegimeIndices <- function(ve.splits, total) {
     return(list.data)
 }
 
-# if decreasing = FALSE, regimes will be split with a < sign
-# if decreasing = TRUE, regimes will be split with a > sign
-getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 10) {
+# a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
+# 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
+getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 30) {
     
     df.AR <- getAR(ve.series, p = getOptimalLagOrder(ve.series, verbose = FALSE))
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
@@ -44,7 +44,11 @@ getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSiz
         }
         ve.sumRSquared[i] <- sumRSquared
     }
-        
+    
+    if (verbose) {
+        mj.multiplot(list.JP$df.scatterDecreasing, ve.points = c(36,120))
+    }
+    
     return(df.cartesian[which.max(ve.sumRSquared), ])
 }
 

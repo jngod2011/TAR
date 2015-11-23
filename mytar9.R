@@ -14,6 +14,9 @@
 #   so that indices will always increase with increasing values of the threshold lag vector.
 #   this facilitates the grid search done in Thresholds.R
 #
+# V9:
+# - removed minor index nuisance that was a necessary implementation feature for the TSAY algorithm in getScatter()
+#
 # p .. lag order 
 # d .. particular threshold lag
 # S .. max threshold lag
@@ -143,7 +146,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
     ve.RSquared <- NULL
     
 	if (constant) {
-		for (i in (m - 1):(n - 1)) {
+		for (i in m:n) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ ., data = df.regime)
 			ve.tStats <- summary(lm.regime)$coefficients[, 3]
@@ -155,7 +158,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
         names(ve.tStats)[1] <- "ve.y.0"            # rename (Intercept) to ve.y.0 like the other coefficients
         names(ve.estimates)[1] <- "ve.y.0" 
 	} else if (!constant) {
-		for (i in (m - 1):(n - 1)) {
+		for (i in m:n) {
 			df.regime <- df.z[1:i, ]
 			lm.regime <- lm(ve.y ~ .-1, data = df.regime)
 			ve.tStats <- summary(lm.regime)$coefficients[, 3]
@@ -170,14 +173,12 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 	names(df.tStats) <- gsub("y", "t", names(df.tStats)) # replace y with t in this vector of names for the t-stats
     names(df.estimates) <- names(ve.estimates)
     names(df.estimates) <- gsub("y", "e", names(df.estimates)) # replace y with e in this vector of names for the estimates
-    ve.thresholdLag <- df.regime[-(1:(m - 2)), (dMax + 1)]
-    
+    ve.thresholdLag <- df.z[m:n, (dMax + 1)]
     
     if (decreasing) {
         ve.thresholdLag <- rev(ve.thresholdLag)
         ve.RSquared <- rev(ve.RSquared)
     }
-    
     
     df.scatter <- cbind.data.frame(ve.thresholdLag, ve.RSquared, df.tStats, df.estimates) # combine threshold variable and dataframes
     	
