@@ -7,8 +7,8 @@ getRangeIndices <- function(candidateIndex, intervalSize) {
     return(ceiling(seq(from = candidateIndex - (intervalSize / 2), to = candidateIndex + (intervalSize / 2))))
 }
 
-getMappedIndex <- function(domain, ve.domain, ve.range) {
-    return(which(ve.domain[domain] == ve.range))
+getMappedIndex <- function(domainIndex, ve.domain, ve.range) {
+    return(which(ve.domain[domainIndex] == ve.range))
 }
 
 getRegimeIndices <- function(ve.splits, total) {
