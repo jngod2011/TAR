@@ -21,7 +21,7 @@ getRegimeIndices <- function(ve.splits, total) {
 
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
-getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 30) {
+getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 30, verbose = FALSE) {
     
     df.AR <- getAR(ve.series, p = getOptimalLagOrder(ve.series, verbose = FALSE))
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
@@ -34,6 +34,8 @@ getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSiz
     df.cartesian <- expand.grid(df.gridIndices)
     nrowCartesian <- nrow(df.cartesian)
     numberRegimes <- ncol(df.cartesian) + 1
+    
+    ve.sumRSquared <- NULL
         
     ve.sumRSquared <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
         sumRSquared <- 0
