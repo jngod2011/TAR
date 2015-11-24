@@ -10,20 +10,27 @@ mj.lines <- function (ve.series, type = "l") {
   lines(ve.series, type = type, col = round(runif(1, 2, 6), 0))
 }
 
-mj.multiplot <- function (df.data, type = "b", name = "", from = 2, to = 2, col = 1, ve.points = 1, new = FALSE) {
+mj.multiplot <- function (df.data, type = "b", name = "", from = 2, to = 2, col = 1, ve.points = 1, new = FALSE, interval = 20) {
 	#pdf(file = "111.pdf", paper = "A4", width=7, height=10)
     dev.new()
+    
+    sequence <- seq_len(nrow(df.data))
+    splitSequence <- sequence[sequence %% interval == 0]
+    
     if (from == -1) from <- 2
     if (to == -1) to <- ncol(df.data)
 	par(mfrow = c((to - from + 1), 1))
 	par(mar=c(3.8, 4.3, 1, 1.5))          # bottom, left, top, right
 	for (i in from:to) {
         string = 
-		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, cex.axis = 0.8, cex.lab = 0.8, 
+		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, 
+                cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
 				mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
                 xlab = names(df.data)[1], ylab = names(df.data)[i],
-                col = col)
+                col = col, col.main = 3, main = name)
+        grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
         for (j in 1:length(ve.points)) points(df.data[ve.points[j], 1], df.data[ve.points[j], i], pch = 3, col = 2)
+        for (k in 1:length(splitSequence)) abline(v = df.data[splitSequence[k], 1], col = "brown1", lty = "dotted")        
 	}
 	
     par(mfrow = c(1, 1))

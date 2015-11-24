@@ -54,10 +54,3 @@ getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSiz
     return(df.cartesian[which.max(ve.sumRSquared), ])
 }
 
-
-
-
-
-
-
-
