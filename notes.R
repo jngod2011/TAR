@@ -31,3 +31,8 @@ summary(ur.df(diff(PYR, differences = 1), type="drift", lags=4))
 # ADF für 2nd diff
 summary(ur.df(diff(PYR, differences = 2), type="drift", lags=4))
 
+
+mj.multiplot(list.JP$df.scatterIncreasing, name = "Increasing", ve.points = c(90, 309), new = TRUE, from = 7, to = 10)
+ve.bestRegime <- getThresholds(ve.errorJP, list.JP$df.scatterIncreasing[, 1], c(45, 256), 2, 105)
+system.time(ve.bestRegime <- getThresholds(ve.errorJP, list.JP$df.scatterIncreasing[, 1], c(45, 256), 2, 105, RSquared = FALSE))
+

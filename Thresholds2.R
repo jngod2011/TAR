@@ -21,7 +21,7 @@ getRegimeIndices <- function(ve.splits, total) {
 
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
-getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 30, verbose = FALSE) {
+getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 30, verbose = FALSE, RSquared = TRUE) {
     
     df.AR <- getAR(ve.series, p = getOptimalLagOrder(ve.series, verbose = FALSE))
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
@@ -36,21 +36,37 @@ getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSiz
     numberRegimes <- ncol(df.cartesian) + 1
     
     ve.sumRSquared <- NULL
+    ve.SSR <- NULL
         
-    ve.sumRSquared <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
-        sumRSquared <- 0
-        ve.splits <- df.cartesian[i, ]
-        list.regimeIndices <- getRegimeIndices(ve.splits, nrowCartesian)
-        for (j in 1:numberRegimes) {
-            sumRSquared <- sumRSquared + summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))$r.squared
+    if (RSquared) {   
+        ve.sumRSquared <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
+            sumRSquared <- 0
+            ve.splits <- df.cartesian[i, ]
+            list.regimeIndices <- getRegimeIndices(ve.splits, nrowCartesian)
+            for (j in 1:numberRegimes) {
+                sumRSquared <- sumRSquared + summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))$r.squared            
+            }
+            ve.sumRSquared[i] <- sumRSquared        
         }
-        ve.sumRSquared[i] <- sumRSquared
+        result <- df.cartesian[which.max(ve.sumRSquared), ]
+    } else if (!RSquared) {
+        ve.sumSSR <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
+            SSR <- 0
+            ve.splits <- df.cartesian[i, ]
+            list.regimeIndices <- getRegimeIndices(ve.splits, nrowCartesian)
+            for (j in 1:numberRegimes) {            
+                SSR <- sum(rapply(summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))[3], function(x) x*x))
+            }
+            ve.SSR[i] <- SSR
+        }
+        result <- df.cartesian[which.min(ve.SSR), ]
     }
+    
     
     if (verbose) {
         mj.multiplot(list.JP$df.scatterDecreasing, ve.points = c(36,120))
     }
     
-    return(df.cartesian[which.max(ve.sumRSquared), ])
+    return(result)
 }
 
