@@ -26,7 +26,7 @@
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-testLinearity <- function(ve.series, p = -1, S = -1, m = -1, constant = FALSE, stationary = TRUE, verbose = FALSE) { 
+testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE, stationary = TRUE, verbose = FALSE) { 
 	
 	ve.y <- as.numeric(ve.series)
 	N <- as.numeric(length(ve.y))
@@ -37,10 +37,10 @@ testLinearity <- function(ve.series, p = -1, S = -1, m = -1, constant = FALSE, s
     }
     
 	# restrict threshold order to a maximum value of the AR order
-	if (S == -1) {
-		S <- p
-	} else if (S > p) {
-		S <- min(p, S)
+	if (min(ve.S) == -1) {
+		ve.S <- seq(from = 1, to = p)
+	} else if (max(ve.S) > p) {
+		ve.S <- seq(from = 1, to = p)
 		cat("S restricted to max value p = ", p, sep = "")
 	}
 	
@@ -51,10 +51,11 @@ testLinearity <- function(ve.series, p = -1, S = -1, m = -1, constant = FALSE, s
     if (m == -1) m <- getRegimeSize(df.y, stationary, verbose)
         
 	# calculate F-test statistic 
-	ve.FStats <- getFStats(df.y, S, p, m, verbose)
+	ve.FStats <- getFStats(df.y, ve.S, p, m, verbose)
 	
 	# get threshold variable with highest F-statistic
 	dMax <- which.max(as.numeric(ve.FStats))
+    if (verbose) cat("d* (dMax) = ", dMax, sep = "")
 	
 	# get t-statistics for each coefficient according to the threshold variable yielding the highest F-statistic
 	df.scatterDecreasing <- getScatter(df.y, dMax, p, constant, stationary, decreasing = TRUE, m)
@@ -67,12 +68,13 @@ testLinearity <- function(ve.series, p = -1, S = -1, m = -1, constant = FALSE, s
 
 
 # calculate F statistics according to different threshold lags
-getFStats <- function(df.y, S, p, m, verbose = FALSE) { 
+getFStats <- function(df.y, ve.S, p, m, verbose = FALSE) { 
 	
 	n <- as.numeric(nrow(df.y))
     ve.FStats <- NULL
 	
-    for (d in 1:S) {
+    for (i in 1:length(ve.S)) {
+        d <- ve.S[i]
         FStat <- NULL
         ve.predictiveResiduals <- NULL
         ve.eta <- NULL
@@ -98,7 +100,7 @@ getFStats <- function(df.y, S, p, m, verbose = FALSE) {
                 (sum(ve.estimatedResiduals^2) / (n - d - m - p))
         
         if (verbose) {
-            cat("F-statistic ", d, ": ", FStat, "\n", sep = "")
+            cat("F-statistic for s = ", d, ": ", FStat, "\n", sep = "")
         }
         
         ve.FStats <- c(ve.FStats, FStat)
