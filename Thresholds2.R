@@ -64,7 +64,7 @@ getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSiz
     
     
     if (verbose) {
-        mj.multiplot(list.JP$df.scatterDecreasing, ve.points = c(36,120))
+        #mj.multiplot(list.JP$df.scatterDecreasing, ve.points = c(36,120))
     }
     
     return(result)

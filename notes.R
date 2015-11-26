@@ -38,3 +38,9 @@ system.time(ve.bestRegime <- getThresholds(ve.errorJP, list.JP$df.scatterIncreas
 
 list.JP1 <- testLinearity(ve.errorJP, ve.S = 1, verbose = TRUE)
 list.JP2 <- testLinearity(ve.errorJP, ve.S = 2, verbose = TRUE)
+list.JP3 <- testLinearity(ve.errorJP, ve.S = 3, verbose = TRUE)
+list.JP4 <- testLinearity(ve.errorJP, ve.S = 4, verbose = TRUE)
+mj.plot(list.JP1$df.scatterIncreasing[, 2])
+mj.lines(list.JP2$df.scatterIncreasing[, 2])
+mj.lines(list.JP3$df.scatterIncreasing[, 2])
+mj.lines(list.JP4$df.scatterIncreasing[, 2])
