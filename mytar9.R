@@ -54,8 +54,8 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
 	ve.FStats <- getFStats(df.y, ve.S, p, m, verbose)
 	
 	# get threshold variable with highest F-statistic
-	dMax <- which.max(as.numeric(ve.FStats))
-    if (verbose) cat("d* (dMax) = ", dMax, sep = "")
+	dMax <- ve.S[which.max(as.numeric(ve.FStats))]
+    if (verbose) cat("d* (dMax) = ", dMax, "\n", sep = "")
 	
 	# get t-statistics for each coefficient according to the threshold variable yielding the highest F-statistic
 	df.scatterDecreasing <- getScatter(df.y, dMax, p, constant, stationary, decreasing = TRUE, m)
