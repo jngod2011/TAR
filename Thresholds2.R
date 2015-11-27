@@ -21,9 +21,11 @@ getRegimeIndices <- function(ve.splits, total) {
 
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
-getThresholds <- function(ve.series, ve.thresholdLag, ve.indices, d, intervalSize = 30, verbose = FALSE, RSquared = TRUE) {
+getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, intervalSize = 30, verbose = FALSE, RSquared = TRUE) {
     
-    df.AR <- getAR(ve.series, p = getOptimalLagOrder(ve.series, verbose = FALSE))
+    if (d == -1) d <- list.data$dMax
+    if (ve.thresholdLag == -1) ve.thresholdLag <- list.data$list.scatterAll[[(d * 2) - 1]][, 1]
+    df.AR <- getAR(list.data$ve.series, p = getOptimalLagOrder(list.data$ve.series, verbose = FALSE))
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
         
     # dataframe with columns of candidates around a potential candidate

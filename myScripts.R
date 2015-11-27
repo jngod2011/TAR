@@ -2,14 +2,20 @@
 
 mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = 1, new = FALSE, interval = 20) {
     dev.new()
-    obs <- paste(name, ", n = ", length(ve.series))
-    plot(ve.series, type = type, col = 1, xlab = obs, las = 1, 
+    
+    sequence <- seq_len(length(ve.series))
+    splitSequence <- sequence[sequence %% interval == 0]
+    
+    obs <- paste("n = ", length(ve.series), sep = "")
+    plot(ve.series, type = type, col = col, xlab = obs, las = 1, 
             mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
             cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
-            col = col, col.main = 3, main = name)
+            col.main = 3, main = name)
     
-    for (j in 1:length(ve.points)) points(df.data[ve.points[j], 1], df.data[ve.points[j], i], pch = 19, col = 2)
-    for (k in 1:length(splitSequence)) abline(v = df.data[splitSequence[k], 1], col = "cornflowerblue", lty = "dotted")  
+    grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
+    for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
+    for (k in 1:length(splitSequence)) abline(v = splitSequence[k], col = "cornflowerblue", lty = "dotted")
+    
     if (!new) dev.off()
 }
 
@@ -33,8 +39,8 @@ mj.multiplot <- function (df.data, type = "b", name = "", from = 2, to = 2, col 
 		plot(x = df.data[, 1], y = df.data[, i], type = type, pch = 5, 
                 cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
 				mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
-                xlab = names(df.data)[1], ylab = names(df.data)[i],
-                col = col, col.main = 3, main = name)
+                xlab = names(df.data)[1], ylab = names(df.data)[i], main = name,
+                col = col, col.main = 3)
 
         grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
         for (j in 1:length(ve.points)) points(df.data[ve.points[j], 1], df.data[ve.points[j], i], pch = 19, col = 2)

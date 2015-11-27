@@ -55,14 +55,21 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
 	
 	# get threshold variable with highest F-statistic
 	dMax <- ve.S[which.max(as.numeric(ve.FStats))]
-    if (verbose) cat("d* (dMax) = ", dMax, "\n", sep = "")
+    if (verbose) cat("max(F(d)): d* (dMax) = ", dMax, "\n", sep = "")
 	
-	# get t-statistics for each coefficient according to the threshold variable yielding the highest F-statistic
-	df.scatterDecreasing <- getScatter(df.y, dMax, p, constant, stationary, decreasing = TRUE, m)
-	df.scatterIncreasing <- getScatter(df.y, dMax, p, constant, stationary, decreasing = FALSE, m)
-    
-	return(list(ve.FStats = ve.FStats, p = p, d = dMax, df.scatterDecreasing = df.scatterDecreasing, 
-                    df.scatterIncreasing = df.scatterIncreasing))
+	# get RSquared and t-statistics, estimates for each coefficient according to the threshold variables    
+    list.scatterAll <- NULL
+        
+    for (i in 1:length(ve.S)) {
+        list.scatter <- NULL
+        df.scatterIncreasing <- getScatter(df.y, d = ve.S[i], p, constant, stationary, decreasing = FALSE, m)
+        df.scatterDecreasing <- getScatter(df.y, d = ve.S[i], p, constant, stationary, decreasing = TRUE, m)
+        list.scatterAll <- c(list.scatterAll, list(df.scatterIncreasing, df.scatterDecreasing))
+        names(list.scatterAll)[2 * i - 1] <- paste("df.scatterIncreasing", i, sep = "")
+        names(list.scatterAll)[2 * i] <- paste("df.scatterDecreasing", i, sep = "")
+    }    
+	
+	return(list(ve.series = ve.series, ve.FStats = ve.FStats, p = p, dMax = dMax, list.scatterAll = list.scatterAll))
 }
 
 
@@ -139,8 +146,8 @@ getRegimeSize <- function(df, stationary = TRUE, verbose = FALSE) {
 
 
 # calculate dataframe with t-Statistics for the predictive residuals to draw in a scatterplot against z_(t-d)
-getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
-	df.z <- df.y[order(df.y[, (dMax + 1)], decreasing = decreasing), ]
+getScatter <- function(df.y, d, p, constant, stationary, decreasing, m) {
+	df.z <- df.y[order(df.y[, (d + 1)], decreasing = decreasing), ]
 	n <- as.numeric(nrow(df.z))
 	ve.predictiveResiduals <- NULL
 	df.tStats <- data.frame(NULL)
@@ -175,7 +182,7 @@ getScatter <- function(df.y, dMax, p, constant, stationary, decreasing, m) {
 	names(df.tStats) <- gsub("y", "t", names(df.tStats)) # replace y with t in this vector of names for the t-stats
     names(df.estimates) <- names(ve.estimates)
     names(df.estimates) <- gsub("y", "e", names(df.estimates)) # replace y with e in this vector of names for the estimates
-    ve.thresholdLag <- df.z[m:n, (dMax + 1)]
+    ve.thresholdLag <- df.z[m:n, (d + 1)]
     
     if (decreasing) {
         ve.thresholdLag <- rev(ve.thresholdLag)
