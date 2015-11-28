@@ -1,6 +1,6 @@
 # 1 black - 2 red - 3 green - 4 blue - 5 cyan - 6 magenta
 
-mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = 1, new = FALSE, interval = 20) {
+mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, new = TRUE, interval = 20) {
     dev.new()
     
     sequence <- seq_len(length(ve.series))
@@ -13,8 +13,34 @@ mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = 1, n
             col.main = 3, main = name)
     
     grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
-    for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
+    if (min(ve.points > 0)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
     for (k in 1:length(splitSequence)) abline(v = splitSequence[k], col = "cornflowerblue", lty = "dotted")
+    
+    if (!new) dev.off()
+}
+
+mj.plotList <- function (list.data, type = "l", name = "", col = 1, ve.points = -1, new = TRUE, interval = 20) {
+    dev.new()
+    ve.series <- as.numeric(list.data$ve.series)
+    
+    sequence <- seq_len(length(ve.series))
+    splitSequence <- sequence[sequence %% interval == 0]
+    
+    obs <- paste("n = ", length(ve.series), sep = "")
+    plot(ve.series, type = type, col = col, xlab = obs, las = 1, 
+            mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
+            cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
+            col.main = 3, main = name)
+    
+    grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
+    if (min(ve.points > 0)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
+    for (k in 1:length(splitSequence)) abline(v = splitSequence[k], col = "cornflowerblue", lty = "dotted")
+    
+    for (l in 1:length(list.data[[5]])) {
+        if (l %% 2 == 0)
+        
+        lines(list.data[[5]][l], type = "l")
+    }
     
     if (!new) dev.off()
 }

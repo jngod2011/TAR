@@ -44,3 +44,14 @@ mj.plot(list.JP1$df.scatterIncreasing[, 2])
 mj.lines(list.JP2$df.scatterIncreasing[, 2])
 mj.lines(list.JP3$df.scatterIncreasing[, 2])
 mj.lines(list.JP4$df.scatterIncreasing[, 2])
+
+
+
+mj.plot(ve.series, col=0)
+mj.lines(c(rep(NA, 61), df.scatterIncreasing[, 1]))
+mj.lines(c(df.scatterDecreasing[, 1], rep(NA, 61)))
+
+mj.plot(seq(0.9, 1, by = 1/4210), col = 0)
+mj.lines(c(rep(NA, 61), df.scatterIncreasing[, 2]))
+mj.lines(c(df.scatterDecreasing[, 2], rep(NA, 61)))
+

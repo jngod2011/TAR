@@ -69,7 +69,9 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
         names(list.scatterAll)[2 * i] <- paste("df.scatterDecreasing", i, sep = "")
     }    
 	
-	return(list(ve.series = ve.series, ve.FStats = ve.FStats, p = p, dMax = dMax, list.scatterAll = list.scatterAll))
+	return(list(p = p, dMax = dMax, N = N, m = m, n = N - m - p + 1, 
+                    ve.series = ve.series, ve.FStats = ve.FStats, 
+                    list.scatterAll = list.scatterAll))
 }
 
 
