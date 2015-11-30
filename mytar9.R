@@ -186,13 +186,18 @@ getScatter <- function(df.y, d, p, constant, stationary, decreasing, m) {
     names(df.estimates) <- gsub("y", "e", names(df.estimates)) # replace y with e in this vector of names for the estimates
     ve.thresholdLag <- df.z[m:n, (d + 1)]
     
+    df.scatter <- cbind.data.frame(ve.thresholdLag, ve.RSquared, df.tStats, df.estimates) # combine threshold variable and dataframes
+
     if (decreasing) {
-        ve.thresholdLag <- rev(ve.thresholdLag)
-        ve.RSquared <- rev(ve.RSquared)
+        rev(df.scatter)
+        ve.NA <- rep(NA, ncol(df.scatter))
+        for (i in 1:(m - 1)) df.scatter <-  rbind(df.scatter, ve.NA)
+        
+    } else if (!decreasing) {
+        ve.NA <- rep(NA, ncol(df.scatter))
+        for (i in 1:(m - 1)) df.scatter <- rbind(ve.NA, df.scatter)
     }
     
-    df.scatter <- cbind.data.frame(ve.thresholdLag, ve.RSquared, df.tStats, df.estimates) # combine threshold variable and dataframes
-    	
     return(df.scatter)
 }
 
