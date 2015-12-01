@@ -21,7 +21,8 @@ getRegimeIndices <- function(ve.splits, total) {
 
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
-getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, intervalSize = 30, verbose = FALSE, RSquared = TRUE) {
+getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, intervalSize = 30, verbose = FALSE, 
+        RSquared = TRUE, increasing = TRUE) {
     
     if (d == -1) d <- list.data$dMax
     if (ve.thresholdLag == -1) ve.thresholdLag <- list.data$list.scatterAll[[(d * 2) - 1]][, 1]

@@ -19,30 +19,37 @@ mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, 
     if (!new) dev.off()
 }
 
-mj.plotList <- function (list.data, type = "l", name = "", col = 1, column = 1, ve.points = -1, new = TRUE, interval = 0,
-        limit = -1) {
+mj.plotList <- function (list.data, type = "l", name = "", col = 0, column = 1, ve.points = -1, ve.verticals = -1, new = TRUE, interval = 0,
+        ylim = -1) {
     dev.new()
-    ve.series <- as.numeric(list.data$ve.series)
+    
+    color1 <- c("seagreen", "springgreen", "springgreen1", "springgreen2", "springgreen3", "springgreen4")
+    color2 <- c("violet", "violetred", "violetred1", "violetred2", "violetred3", "violetred4")
     
     
     sequence <- seq_len(length(ve.series))
     splitSequence <- sequence[sequence %% interval == 0]
     
-    obs <- paste("n = ", length(ve.series), sep = "")
+    obs <- paste("n = ", (list.data$N - list.data$p), sep = "")
     
-    if (min(limit) == -1) limit <- c(min(list.data$ve.series), max(list.data$ve.series))
-    plot(ve.series, type = type, col = 0, xlab = obs, las = 1, 
+    if (min(ylim) == -1) ylim <- c(min(list.data$list.scatterAll[[1]][, column], na.rm = TRUE), 
+    max(list.data$list.scatterAll[[1]][, column], na.rm = TRUE))
+    plot(seq(0, (list.data$N - list.data$p)), type = type, col = 0, 
+            xlab = obs, las = 1, 
             mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
             cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
-            col.main = 3, main = name, ylim = limit)
+            col.main = 1, main = name, ylim = ylim)
     
     grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
-    if (min(ve.points > 0)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
+    if (min(ve.points != -1)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
+    if (min(ve.verticals != -1)) for (j in 1:length(ve.points)) abline(ve.verticals[j], ve.series[ve.points[j]], pch = 19, col = 2)
     for (k in 1:length(splitSequence)) abline(v = splitSequence[k], col = "cornflowerblue", lty = "dotted")
     
     for (l in 1:length(list.data$list.scatterAll)) {
-        if (l %% 2 == 0) lines(list.data$list.scatterAll[[l]][, column], type = "l", col = (l %% 2 + 2)) # Red: Decreasing
-        if (l %% 2 == 1) lines(list.data$list.scatterAll[[l]][, column], type = "l", col = (l %% 2 + 3)) # Blue: Increasing
+        if (l %% 2 == 0) lines(c(rep(NA, (list.data$m - 1)), list.data$list.scatterAll[[l]][, column]), 
+                    type = "l", col = color1[floor(l/2 + 1)]) # Green: Decreasing
+        if (l %% 2 == 1) lines(c(rep(NA, (list.data$m - 1)), list.data$list.scatterAll[[l]][, column]), 
+                    type = "l", col = color2[floor(l/2 + 1)]) # Purple: Increasing
     }
     
     if (!new) dev.off()
