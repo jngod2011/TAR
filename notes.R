@@ -61,3 +61,4 @@ mj.plotList(list.JP, column = 3, ylim = c(7, 28), name = "t-statistics for d = 1
 mj.plotList(list.JP, column = 4, ylim=c(-6, -1), name = "t-statistics for d = 2")        # t-Statistic d = 2
 mj.plotList(list.JP, column = 5, ylim=c(0.5, 3), name = "t-statistics for d = 3")        # t-Statistic d = 3
 mj.plotList(list.JP, column = 6, ylim=c(-2.6, 0.3), name = "t-statistics for d = 3")     # t-Statistic d = 4
+df.bestRegime <- getThresholds(list.JP, ve.indices = c(106, 317), interval = 210)

@@ -30,9 +30,13 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
         
     # dataframe with columns of candidates around a potential candidate
+    # df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
+    #     getRangeIndices(getMappedIndex(ve.indices[i], ve.thresholdLag, df.ordered[, (d + 1)]), intervalSize)
+    # }
+    
     df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
-        getRangeIndices(getMappedIndex(ve.indices[i], ve.thresholdLag, df.ordered[, (d + 1)]), intervalSize)
-    }
+            getRangeIndices(ve.indices[i], intervalSize)
+        }
     
     df.cartesian <- expand.grid(df.gridIndices)
     nrowCartesian <- nrow(df.cartesian)

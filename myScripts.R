@@ -23,9 +23,8 @@ mj.plotList <- function (list.data, type = "l", name = "", col = 0, column = 1, 
         ylim = -1) {
     dev.new()
     
-    color1 <- c("seagreen", "springgreen", "springgreen1", "springgreen2", "springgreen3", "springgreen4")
-    color2 <- c("violet", "violetred", "violetred1", "violetred2", "violetred3", "violetred4")
-    
+    color1 <- c("violet", "violetred", "violetred1", "violetred2", "violetred3", "violetred4")
+    color2 <- c("seagreen", "springgreen", "springgreen1", "springgreen2", "springgreen3", "springgreen4")
     
     sequence <- seq_len(length(ve.series))
     splitSequence <- sequence[sequence %% interval == 0]
@@ -47,9 +46,9 @@ mj.plotList <- function (list.data, type = "l", name = "", col = 0, column = 1, 
     
     for (l in 1:length(list.data$list.scatterAll)) {
         if (l %% 2 == 0) lines(c(rep(NA, (list.data$m - 1)), list.data$list.scatterAll[[l]][, column]), 
-                    type = "l", col = color1[floor(l/2 + 1)]) # Green: Decreasing
+                    type = "l", col = color1[floor(l/2 + 1)]) # Purple: Decreasing
         if (l %% 2 == 1) lines(c(rep(NA, (list.data$m - 1)), list.data$list.scatterAll[[l]][, column]), 
-                    type = "l", col = color2[floor(l/2 + 1)]) # Purple: Increasing
+                    type = "l", col = color2[floor(l/2 + 1)]) # Green: Increasing
     }
     
     if (!new) dev.off()
