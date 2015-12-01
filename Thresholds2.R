@@ -3,7 +3,7 @@
 # Author: michael
 ###############################################################################
 
-getRangeIndices <- function(candidateIndex, intervalSize) {
+getRangeIndices <- function(candidateIndex, intervalSize = 20) {
     return(ceiling(seq(from = candidateIndex - (intervalSize / 2), to = candidateIndex + (intervalSize / 2))))
 }
 
@@ -26,7 +26,7 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     
     if (d == -1) d <- list.data$dMax
     if (ve.thresholdLag == -1) ve.thresholdLag <- list.data$list.scatterAll[[(d * 2) - 1]][, 1]
-    df.AR <- getAR(list.data$ve.series, p = getOptimalLagOrder(list.data$ve.series, verbose = FALSE))
+    df.AR <- getAR(list.data$ve.series, p = list.data$p)
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
         
     # dataframe with columns of candidates around a potential candidate
@@ -36,7 +36,7 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     
     df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
             getRangeIndices(ve.indices[i], intervalSize)
-        }
+    }
     
     df.cartesian <- expand.grid(df.gridIndices)
     nrowCartesian <- nrow(df.cartesian)
@@ -49,11 +49,11 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
         ve.sumRSquared <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
             sumRSquared <- 0
             ve.splits <- df.cartesian[i, ]
-            list.regimeIndices <- getRegimeIndices(ve.splits, nrowCartesian)
+            list.regimeIndices <- getRegimeIndices(ve.splits, (list.data$N - list.data$p))
             for (j in 1:numberRegimes) {
                 sumRSquared <- sumRSquared + summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))$r.squared            
             }
-            ve.sumRSquared[i] <- sumRSquared        
+            ve.sumRSquared[i] <- sumRSquared
         }
         result <- df.cartesian[which.max(ve.sumRSquared), ]
     } else if (!RSquared) {
@@ -71,7 +71,8 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     
     
     if (verbose) {
-        #mj.multiplot(list.JP$df.scatterDecreasing, ve.points = c(36,120))
+        cat("Vector with optimal indices:", as.numeric(result), "(out of", nrow(df.cartesian), "possibilities)\n", sep = " ")
+        cat("Chosen method:", if(RSquared) "RSquared" else "SSR", ":", max(ve.sumRSquared), "\n", sep = " ")
     }
     
     return(result)

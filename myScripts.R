@@ -26,7 +26,7 @@ mj.plotList <- function (list.data, type = "l", name = "", col = 0, column = 1, 
     color1 <- c("violet", "violetred", "violetred1", "violetred2", "violetred3", "violetred4")
     color2 <- c("seagreen", "springgreen", "springgreen1", "springgreen2", "springgreen3", "springgreen4")
     
-    sequence <- seq_len(length(ve.series))
+    sequence <- seq_len(list.data$N - list.data$p + 50)
     splitSequence <- sequence[sequence %% interval == 0]
     
     obs <- paste("n = ", (list.data$N - list.data$p), sep = "")
