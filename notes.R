@@ -66,3 +66,8 @@ rect(xleft = 290-132, xright = 290+132, ytop = 30, ybottom = 0, col = "#88FF8811
 abline(v = 354,col = "cornflowerblue")
 abline(v = 290-132,col = "darkgreen")
 abline(v = 290+132,col = "darkgreen")
+
+
+abs(head(df.cartesian[, 1]) - head(df.cartesian[, 2])) > m
+#next:
+df.cartesianRestricted <- df.cartesian[abs(df.cartesian[, 1] - df.cartesian[, 2]) > m, ]
