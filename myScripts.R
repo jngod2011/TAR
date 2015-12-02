@@ -1,6 +1,6 @@
 # 1 black - 2 red - 3 green - 4 blue - 5 cyan - 6 magenta
 
-mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, new = TRUE, interval = 20) {
+mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, new = TRUE, interval = 0, grid = TRUE) {
     dev.new()
     
     sequence <- seq_len(length(ve.series))
@@ -12,7 +12,7 @@ mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, 
             cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
             col.main = 3, main = name)
     
-    grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
+    if (grid) grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
     if (min(ve.points > 0)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
     for (k in 1:length(splitSequence)) abline(v = splitSequence[k], col = "cornflowerblue", lty = "dotted")
     
@@ -20,7 +20,7 @@ mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, 
 }
 
 mj.plotList <- function (list.data, type = "l", name = "", col = 0, column = 1, ve.points = -1, ve.verticals = -1, new = TRUE, interval = 0,
-        ylim = -1) {
+        ylim = -1, grid = TRUE) {
     dev.new()
     
     color1 <- c("violet", "violetred", "violetred1", "violetred2", "violetred3", "violetred4")
@@ -39,7 +39,7 @@ mj.plotList <- function (list.data, type = "l", name = "", col = 0, column = 1, 
             cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
             col.main = 1, main = name, ylim = ylim)
     
-    grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
+    if (grid) grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
     if (min(ve.points != -1)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)
     if (min(ve.verticals != -1)) for (j in 1:length(ve.points)) abline(ve.verticals[j], ve.series[ve.points[j]], pch = 19, col = 2)
     for (k in 1:length(splitSequence)) abline(v = splitSequence[k], col = "cornflowerblue", lty = "dotted")

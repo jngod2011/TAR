@@ -2,4 +2,4 @@
 
 library(tsDyn)
 library(vars)
-library(Quandl)
+library(foreach)
