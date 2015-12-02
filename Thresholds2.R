@@ -22,7 +22,7 @@ getRegimeIndices <- function(ve.splits, total) {
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
 getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, intervalSize = 30, verbose = FALSE, 
-        RSquared = TRUE, increasing = TRUE) {
+        method = 1, increasing = TRUE) {
     
     if (d == -1) d <- list.data$dMax
     if (ve.thresholdLag == -1) ve.thresholdLag <- list.data$list.scatterAll[[(d * 2) - 1]][, 1]
@@ -42,39 +42,63 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     nrowCartesian <- nrow(df.cartesian)
     numberRegimes <- ncol(df.cartesian) + 1
     
-    ve.sumRSquared <- NULL
-    ve.SSR <- NULL
+    df.RSquared <- NULL
+    df.AdjRSquared <- NULL
+    df.SSR <- NULL
+    df.AIC <- NULL
+    df.BIC <- NULL
+    
+    
+    for (i in 1:nrow(df.cartesian)) {
+        ve.splits <- df.cartesian[i, ]    
         
-    if (RSquared) {   
-        ve.sumRSquared <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
-            sumRSquared <- 0
-            ve.splits <- df.cartesian[i, ]
-            list.regimeIndices <- getRegimeIndices(ve.splits, (list.data$N - list.data$p))
-            for (j in 1:numberRegimes) {
-                sumRSquared <- sumRSquared + summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))$r.squared            
-            }
-            ve.sumRSquared[i] <- sumRSquared
+        ve.RSquared <- NULL
+        ve.AdjRSquared <- NULL
+        ve.SSR <- NULL
+        ve.AIC <- NULL
+        ve.BIC <- NULL
+        
+        list.regimeIndices <- getRegimeIndices(ve.splits, (list.data$N - list.data$p))
+        for (j in 1:numberRegimes) {
+            LM <- lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ])
+            summaryLM <- summary(LM)
+            ve.RSquared <- c(ve.RSquared, summaryLM$r.squared) 
+            ve.AdjRSquared <- c(ve.RSquared, summaryLM$adj.r.squared)
+            ve.SSR <- c(ve.SSR, as.numeric(summaryLM$residuals %*% summaryLM$residuals))
+            ve.AIC <- c(ve.AIC, AIC(LM))
+            ve.BIC <- c(ve.BIC, BIC(LM))            
         }
-        result <- df.cartesian[which.max(ve.sumRSquared), ]
-    } else if (!RSquared) {
-        ve.sumSSR <- foreach(i = 1:nrow(df.cartesian), .combine = 'c') %do% {
-            SSR <- 0
-            ve.splits <- df.cartesian[i, ]
-            list.regimeIndices <- getRegimeIndices(ve.splits, nrowCartesian)
-            for (j in 1:numberRegimes) {            
-                SSR <- sum(rapply(summary(lm(ve.y ~ ., data = df.ordered[list.regimeIndices[[j]], ]))[3], function(x) x*x))
-            }
-            ve.SSR[i] <- SSR
-        }
-        result <- df.cartesian[which.min(ve.SSR), ]
+        df.RSquared <- rbind(df.RSquared, ve.RSquared)
+        df.AdjRSquared <- rbind(df.AdjRSquared, ve.AdjRSquared)
+        df.SSR <- rbind(df.SSR, ve.SSR)
+        df.AIC <- rbind(df.AIC, ve.AIC)
+        df.BIC <- rbind(df.BIC, ve.BIC)
     }
+    
+    bestRSquared <- which.max(as.numeric(rowMeans(df.RSquared)))
+    bestAdjRSquared <- which.max(as.numeric(rowMeans(df.AdjRSquared)))
+    bestSSR <- which.min(as.numeric(rowMeans(df.SSR)))
+    bestAIC <- which.min(as.numeric(rowMeans(df.AIC)))
+    bestBIC <- which.min(as.numeric(rowMeans(df.BIC)))
     
     
     if (verbose) {
-        cat("Vector with optimal indices:", as.numeric(result), "(out of", nrow(df.cartesian), "possibilities)\n", sep = " ")
-        cat("Chosen method:", if(RSquared) "RSquared" else "SSR", ":", max(ve.sumRSquared), "\n", sep = " ")
+        cat("Vector with optimal indices:", as.numeric(result), "(out of", nrow(df.cartesian), "possibilities)\n", sep = " ")    
     }
     
-    return(result)
+    list.thresholds <- list(df.cartesian = df.cartesian, df.RSquared = df.RSquared, df.AdjRSquared = df.AdjRSquared, 
+            df.SSR = df.SSR, df.AIC = df.AIC, df.BIC = df.BIC, bestRSquared = bestRSquared, bestAdjRSquared = bestAdjRSquared, 
+            bestSSR = bestSSR, bestAIC = bestAIC, bestBIC = bestBIC)
+    
+    return(list(p = list.data$p, 
+                    dMax = list.data$dMax, 
+                    N = list.data$N, 
+                    m = list.data$m, 
+                    n = list.data$N - list.data$m - list.data$p + 1, 
+                    ve.series = list.data$ve.series, 
+                    ve.FStats = list.data$ve.FStats, 
+                    list.scatterAll = list.data$list.scatterAll, 
+                    list.thresholds = list.thresholds))
+
 }
 

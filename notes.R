@@ -61,7 +61,10 @@ mj.plotList(list.JP, column = 3, ylim = c(7, 28), name = "t-statistics for y_t-1
 mj.plotList(list.JP, column = 4, ylim=c(-6, -1), name = "t-statistics for y_t-2")        # t-Statistic d = 2
 mj.plotList(list.JP, column = 5, ylim=c(0.5, 3), name = "t-statistics for y_t-3")        # t-Statistic d = 3
 mj.plotList(list.JP, column = 6, ylim=c(-2.6, 0.3), name = "t-statistics for y_t-4")     # t-Statistic d = 4
-df.bestRegime <- getThresholds(list.JP, ve.indices = c(106, 317), interval = 210)
+list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(145, 290), intervalSize = 10)
+rect(xleft = 290-132, xright = 290+132, ytop = 30, ybottom = 0, col = "#88FF8811")
 abline(v = 354,col = "cornflowerblue")
-abline(v = 290+132,col = "darkgreen")
 abline(v = 290-132,col = "darkgreen")
+abline(v = 290+132,col = "darkgreen")
+
+
