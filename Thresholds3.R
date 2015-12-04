@@ -41,14 +41,14 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
     ve.thresholdLag <- df.ordered[, (d + 1)]
     k <- length(ve.indices) + 1 # number of regimes
-    
+        
     # dataframe with columns of candidates around a potential candidate
     # df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
     #     getRangeIndices(getMappedIndex(ve.indices[i], ve.thresholdLag, df.ordered[, (d + 1)]), intervalSize)
     # }
     
     df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
-        getRangeIndices(ve.indices[i], intervalSize)
+            getRangeIndices(ve.indices[i], intervalSize)
     }
     
     df.cartesian <- expand.grid(df.gridIndices)
@@ -67,8 +67,8 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     df.BIC <- NULL
     
     
-    for (i in 1:nrow(df.cartesian)) {
-        ve.splits <- df.cartesian[i, ]    
+    for (i in 1:nrow(df.adjCartesian)) {
+        ve.splits <- df.adjCartesian[i, ]
         
         ve.RSquared <- NULL
         ve.AdjRSquared <- NULL
@@ -99,7 +99,7 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     bestAIC <- which.min(as.numeric(rowMeans(df.AIC)))
     bestBIC <- which.min(as.numeric(rowMeans(df.BIC)))
     
-        
+    
     if (verbose) {
         cat("Vector with optimal indices:", as.numeric(result), "(out of", nrow(df.cartesian), "possibilities)\n", sep = " ")    
     }

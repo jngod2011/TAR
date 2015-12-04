@@ -68,6 +68,7 @@ abline(v = 290-132,col = "darkgreen")
 abline(v = 290+132,col = "darkgreen")
 
 # plot thresholds over ve.errorJP
+list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(106, 317), intervalSize = 210)
 list.JP.Thresh2$list.thresholds$df.adjCartesian[list.JP.Thresh2$list.thresholds$bestRSquared, ]
 list.JP.Thresh2$list.thresholds$df.adjCartesian[list.JP.Thresh2$list.thresholds$bestAIC, ]
 list.JP.Thresh2$list.thresholds$df.adjCartesian[list.JP.Thresh2$list.thresholds$bestSSR, ]
