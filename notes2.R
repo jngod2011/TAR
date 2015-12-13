@@ -69,8 +69,12 @@ abline(v = 290+132,col = "darkgreen")
 
 # plot thresholds over ve.errorJP
 list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(106, 317), intervalSize = 210)
-list.JP.Thresh2$list.thresholds$df.adjCartesian[list.JP.Thresh2$list.thresholds$bestRSquared, ]
-list.JP.Thresh2$list.thresholds$df.adjCartesian[list.JP.Thresh2$list.thresholds$bestAIC, ]
-list.JP.Thresh2$list.thresholds$df.adjCartesian[list.JP.Thresh2$list.thresholds$bestSSR, ]
+list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestRSquared, ]
+list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestAIC, ]
+list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestSSR, ]
 mj.plot(ve.errorJP, grid = TRUE)
-abline(h = c(list.JP.Thresh2$ve.thresholdLag[63], list.JP.Thresh2$ve.thresholdLag[346]), lty = "dotted", col = 2)
+# draw thresholds 
+abline(h = c(list.JP.Thresh$ve.thresholdLag[63], list.JP.Thresh$ve.thresholdLag[346]), lty = "dotted", col = 2)
+abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "SSR"], lty = "dotted", col = 2)
+abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "RSquared"], lty = "dotted", col = 3)
+abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "AIC"], lty = "dotted", col = 4)

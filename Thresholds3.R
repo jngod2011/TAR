@@ -24,7 +24,7 @@ getAdjustedCartesian <- function(df.cartesian, minRegimeSize, maxIndex) {
     for (i in 1:(ncol(df.cartesian) - 1)) {
         df.cartesian <- df.cartesian[abs(df.cartesian[, i] - df.cartesian[, i + i]) >= minRegimeSize, ]    
     }
-    df.cartesian <- df.cartesian[abs(maxIndex - df.cartesian[, ncol(df.cartesian)]) >= minRegimeSize, ]
+    df.cartesian <- df.cartesian[abs(maxIndex - df.cartesian[, ncol(df.cartesian)]) >= minRegimeSize, ] # check for last column
     
     return(df.cartesian)
 }
@@ -64,8 +64,7 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     df.AdjRSquared <- NULL
     df.SSR <- NULL
     df.AIC <- NULL
-    df.BIC <- NULL
-    
+    df.BIC <- NULL    
     
     for (i in 1:nrow(df.adjCartesian)) {
         ve.splits <- df.adjCartesian[i, ]
@@ -84,7 +83,7 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
             ve.AdjRSquared <- c(ve.RSquared, summaryLM$adj.r.squared)
             ve.SSR <- c(ve.SSR, as.numeric(summaryLM$residuals %*% summaryLM$residuals))
             ve.AIC <- c(ve.AIC, AIC(LM))
-            ve.BIC <- c(ve.BIC, BIC(LM))            
+            ve.BIC <- c(ve.BIC, BIC(LM))
         }
         df.RSquared <- rbind(df.RSquared, ve.RSquared)
         df.AdjRSquared <- rbind(df.AdjRSquared, ve.AdjRSquared)
@@ -99,14 +98,31 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     bestAIC <- which.min(as.numeric(rowMeans(df.AIC)))
     bestBIC <- which.min(as.numeric(rowMeans(df.BIC)))
     
+    df.thresholds <- cbind.data.frame(
+            ve.thresholdLag[as.numeric(df.adjCartesian[bestRSquared, ])],
+            ve.thresholdLag[as.numeric(df.adjCartesian[bestAdjRSquared, ])],
+            ve.thresholdLag[as.numeric(df.adjCartesian[bestSSR, ])],
+            ve.thresholdLag[as.numeric(df.adjCartesian[bestAIC, ])],
+            ve.thresholdLag[as.numeric(df.adjCartesian[bestBIC, ])]
+    )
+    colnames(df.thresholds) <- c("RSquared", "AdjRSquared", "SSR", "AIC", "BIC")
+    
+    df.thresholdIndices <- cbind.data.frame(
+            as.numeric(df.adjCartesian[bestRSquared, ]),
+            as.numeric(df.adjCartesian[bestAdjRSquared, ]),
+            as.numeric(df.adjCartesian[bestSSR, ]),
+            as.numeric(df.adjCartesian[bestAIC, ]),
+            as.numeric(df.adjCartesian[bestBIC, ])
+    )
+    colnames(df.thresholdIndices) <- c("RSquared", "AdjRSquared", "SSR", "AIC", "BIC")
     
     if (verbose) {
         cat("Vector with optimal indices:", as.numeric(result), "(out of", nrow(df.cartesian), "possibilities)\n", sep = " ")    
     }
     
     list.thresholds <- list(df.adjCartesian = df.adjCartesian, df.RSquared = df.RSquared, df.AdjRSquared = df.AdjRSquared, 
-            df.SSR = df.SSR, df.AIC = df.AIC, df.BIC = df.BIC, bestRSquared = bestRSquared, 
-            bestAdjRSquared = bestAdjRSquared, bestSSR = bestSSR, bestAIC = bestAIC, bestBIC = bestBIC)
+            df.SSR = df.SSR, df.AIC = df.AIC, df.BIC = df.BIC, df.thresholds = df.thresholds, df.thresholdIndices = 
+                    df.thresholdIndices)
     
     return(list(p = list.data$p, 
                     dMax = list.data$dMax, 
@@ -117,8 +133,8 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
                     ve.series = list.data$ve.series, 
                     ve.FStats = list.data$ve.FStats,
                     ve.thresholdLag = ve.thresholdLag,
+                    df.ordered = df.ordered,
                     list.scatterAll = list.data$list.scatterAll, 
                     list.thresholds = list.thresholds))
-
 }
 
