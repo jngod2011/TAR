@@ -78,3 +78,6 @@ abline(h = c(list.JP.Thresh$ve.thresholdLag[63], list.JP.Thresh$ve.thresholdLag[
 abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "SSR"], lty = "dotted", col = 2)
 abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "RSquared"], lty = "dotted", col = 3)
 abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "AIC"], lty = "dotted", col = 4)
+
+df.vecm1 <- VECM(data.frame(df.vecmFirstRegime[, 1:8], df.vecmFirstRegime[, 11]), lag = 2)
+predict(df.vecm1, n.ahead = 1)

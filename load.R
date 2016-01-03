@@ -15,7 +15,6 @@ df.US_UK <- df.MEI_Master[,c(1,ve.selectUS, ve.selectUK)]
 df.US_EA <- df.MEI_Master[,c(1,ve.selectUS, ve.selectEA)]
 df.US_RU <- df.MEI_Master[,c(1,ve.selectUS, ve.selectRU)]
 
-
 df.log_US_JP <- data.frame(s=log(df.US_JP[,16]),                        # log exchange rate
                            m1=log(df.US_JP[,5])-log(df.US_JP[,12]),     # log m1 index
                            m3=log(df.US_JP[,6])-log(df.US_JP[,13]),     # log m3 index
@@ -25,7 +24,6 @@ df.log_US_JP <- data.frame(s=log(df.US_JP[,16]),                        # log ex
                            immediate=df.US_JP[,4]-df.US_JP[,11],        # immediate
                            shares=log(df.US_JP[,7])-log(df.US_JP[,14])  # log shares index
 )
-
 
 df.log_US_CH <- data.frame(s=log(df.US_CH[,16]),                        # log exchange rate
                            m1=log(df.US_CH[,5])-log(df.US_CH[,12]),     # log m1 index
@@ -91,8 +89,4 @@ ve.errorEA <- summary(lm(s~., data=df.log_US_EA))$residuals
 ve.errorJP <- summary(lm(s~., data=df.log_US_JP))$residuals
 ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
-
-
-
-
 

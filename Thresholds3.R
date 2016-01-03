@@ -31,6 +31,7 @@ getAdjustedCartesian <- function(df.cartesian, minRegimeSize, maxIndex) {
 
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
+# if df.thresholdIndices give for example 63, 346, this means regime 1 contains observations 1:63, then 64:346, finally 347:last
 getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, intervalSize = 30, verbose = FALSE, 
         method = 1, increasing = TRUE, minRegimeSize = -1) {
     
@@ -42,17 +43,11 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     ve.thresholdLag <- df.ordered[, (d + 1)]
     k <- length(ve.indices) + 1 # number of regimes
         
-    # dataframe with columns of candidates around a potential candidate
-    # df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
-    #     getRangeIndices(getMappedIndex(ve.indices[i], ve.thresholdLag, df.ordered[, (d + 1)]), intervalSize)
-    # }
-    
     df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
             getRangeIndices(ve.indices[i], intervalSize)
     }
     
     df.cartesian <- expand.grid(df.gridIndices)
-    
     df.adjCartesian <- getAdjustedCartesian(df.cartesian = df.cartesian, minRegimeSize = minRegimeSize, 
             maxIndex = list.data$N - list.data$p)
         
