@@ -80,4 +80,8 @@ abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "RSquared"], lty = "do
 abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "AIC"], lty = "dotted", col = 4)
 
 df.vecm1 <- VECM(data.frame(df.vecmFirstRegime[, 1:8], df.vecmFirstRegime[, 11]), lag = 2)
-predict(df.vecm1, n.ahead = 1)
+
+library(vars)
+library(urca)
+mod.VAR1 <- VAR(df.vecmFirstRegime[1:60, 1:8], exogen = df.vecmFirstRegime[1:60, 9])
+predict(mod.VAR1, n.ahead = 6, dumvar = matrix(df.vecmFirstRegime[1:6, 9]))

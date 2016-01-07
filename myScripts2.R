@@ -110,7 +110,10 @@ getAR <- function(ve.series, p = 0) {
 }
 
 
-lag <- function(ve.series, sc.lag = 1) {
-  ve.data <- c(ve.series[(sc.lag + 1):length(ve.series)], rep(NA, sc.lag))
-  return(ve.data)
+lag <- function(ve.series, lag = 1) {
+    return(c(rep(NA, lag), ve.series[1:(length(ve.series) - lag)]))
+}
+
+diff <- function(ve.series, diff = 1) {
+    return(ve.series[2:length(ve.series)] - ve.series[1:(length(ve.series)-1)])
 }
