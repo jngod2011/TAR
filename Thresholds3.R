@@ -3,38 +3,17 @@
 # Author: michael
 ###############################################################################
 
-getRangeIndices <- function(candidateIndex, intervalSize = 20) {
-    return(ceiling(seq(from = candidateIndex - (intervalSize / 2), to = candidateIndex + (intervalSize / 2))))
-}
-
-getMappedIndex <- function(domainIndex, ve.domain, ve.range) {
-    return(which(ve.domain[domainIndex] == ve.range))
-}
-
-getRegimeIndices <- function(ve.splits, total) {
-    ve.splits <- as.numeric(unlist(c(0, ve.splits, total)))
-    list.data <- foreach (i = 1:(length(ve.splits) - 1)) %do% {
-        seq(from = (ve.splits[i] + 1), to = ve.splits[i + 1])
-    }
-    return(list.data)
-}
-
-getAdjustedCartesian <- function(df.cartesian, minRegimeSize, maxIndex) {
-    df.cartesian <- df.cartesian[abs(1 - df.cartesian[, 1]) >= minRegimeSize, ]
-    for (i in 1:(ncol(df.cartesian) - 1)) {
-        df.cartesian <- df.cartesian[abs(df.cartesian[, i] - df.cartesian[, i + i]) >= minRegimeSize, ]    
-    }
-    df.cartesian <- df.cartesian[abs(maxIndex - df.cartesian[, ncol(df.cartesian)]) >= minRegimeSize, ] # check for last column
-    
-    return(df.cartesian)
-}
-
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
 # if df.thresholdIndices give for example 63, 346, this means regime 1 contains observations 1:63, then 64:346, finally 347:last
-getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, intervalSize = 30, verbose = FALSE, 
-        method = 1, increasing = TRUE, minRegimeSize = -1) {
+getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices = NULL, d = -1, intervalSize = 30, 
+        verbose = FALSE, method = 1, increasing = TRUE, minRegimeSize = -1, k = 3) {
     
+    # if no grid is specified, grid search over all data, for k regimes
+    if (is.null(ve.indices)) {
+        intervalSize <- floor(((list.data$N - list.data$p - (k - 1)) / 2) / (k - 1))
+        for (i in 1:(k - 1)) ve.indices[i] <- ((2 * i) - i) * intervalSize + i
+    }
     if (d == -1) d <- list.data$dMax
     if (ve.thresholdLag == -1) ve.thresholdLag <- list.data$list.scatterAll[[(d * 2) - 1]][, 1]
     if (minRegimeSize == -1) minRegimeSize <- list.data$m
@@ -42,15 +21,15 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
     ve.thresholdLag <- df.ordered[, (d + 1)]
     k <- length(ve.indices) + 1 # number of regimes
-        
+    
     df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
-            getRangeIndices(ve.indices[i], intervalSize)
+        getRangeIndices(ve.indices[i], intervalSize)
     }
     
     df.cartesian <- expand.grid(df.gridIndices)
     df.adjCartesian <- getAdjustedCartesian(df.cartesian = df.cartesian, minRegimeSize = minRegimeSize, 
             maxIndex = list.data$N - list.data$p)
-        
+    
     nrowCartesian <- nrow(df.cartesian)
     nrowAdjCartesian <- nrow(df.adjCartesian)
     numberRegimes <- ncol(df.cartesian) + 1
@@ -132,4 +111,33 @@ getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices, d = -1, i
                     list.scatterAll = list.data$list.scatterAll, 
                     list.thresholds = list.thresholds))
 }
+
+
+getRangeIndices <- function(candidateIndex, intervalSize = 20) {
+    return(ceiling(seq(from = candidateIndex - (intervalSize / 2), to = candidateIndex + (intervalSize / 2))))
+}
+
+getMappedIndex <- function(domainIndex, ve.domain, ve.range) {
+    return(which(ve.domain[domainIndex] == ve.range))
+}
+
+getRegimeIndices <- function(ve.splits, total) {
+    ve.splits <- as.numeric(unlist(c(0, ve.splits, total)))
+    list.data <- foreach (i = 1:(length(ve.splits) - 1)) %do% {
+        seq(from = (ve.splits[i] + 1), to = ve.splits[i + 1])
+    }
+    return(list.data)
+}
+
+getAdjustedCartesian <- function(df.cartesian, minRegimeSize, maxIndex) {
+    df.cartesian <- df.cartesian[abs(1 - df.cartesian[, 1]) >= minRegimeSize, ]
+    for (i in 1:(ncol(df.cartesian) - 1)) {
+        df.cartesian <- df.cartesian[abs(df.cartesian[, i] - df.cartesian[, i + i]) >= minRegimeSize, ]    
+    }
+    df.cartesian <- df.cartesian[abs(maxIndex - df.cartesian[, ncol(df.cartesian)]) >= minRegimeSize, ] # check for last column
+    
+    return(df.cartesian)
+}
+
+
 

@@ -2,6 +2,7 @@
 
 library(tsDyn)
 library(vars)
+library(urca)
 # library(TSA)
 library(foreach)
 # library(doMC) # multi cpu core

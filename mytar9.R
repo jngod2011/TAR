@@ -26,7 +26,8 @@
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
 
-testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE, stationary = TRUE, verbose = FALSE) { 
+testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE, 
+        stationary = TRUE, verbose = FALSE) { 
 	
 	ve.y <- as.numeric(ve.series)
 	N <- as.numeric(length(ve.y))
@@ -121,7 +122,10 @@ getFStats <- function(df.y, ve.S, p, m, verbose = FALSE) {
 
 # calculate optimal lag order based on AIC, SC
 getOptimalLagOrder <- function(ve.series, verbose = FALSE) {
-	p <- as.numeric(round(((VARselect(ve.series)$selection[1] + VARselect(ve.series)$selection[3]) / 2), digits = 0))
+    # p as optimal order by SC: usually the more parsimonious model
+	#p <- as.numeric(VARselect(ve.series)$selection[3])
+    # p as optimal order by AIC
+    p <- as.numeric(VARselect(ve.series)$selection[1])
 	
     if (verbose) {
         cat("Optimal lag order: ", p, "\n", sep = "")

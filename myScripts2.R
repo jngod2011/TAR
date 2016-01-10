@@ -91,11 +91,11 @@ mj.multiplot <- function (df.data, type = "b", name = "", from = 2, to = 2, col 
 
 as.numeric.factor <- function(x) {as.numeric(levels(x))[x]}
 
-getAR <- function(ve.series, p = 0) {
+getAR <- function(ve.series, p = -1) {
   N <- length(ve.series)
   ve.y <- ve.series
-  if (p == 0) {
-    p <- round(((VARselect(ve.y)$selection[1] + VARselect(ve.y)$selection[3]) / 2), digits = 0)
+  if (p == -1) {
+    p <- (VARselect(ve.y)$selection[1]) # AIC optimal lag order
   }
   
   ve.y <- c(ve.y, rep(NA, p))

@@ -1,4 +1,4 @@
-install.packages("tsDyn")
+
 
 
 df.MEI_Master <- data.frame(read.csv("data/MultipleCountries/alldata.csv", header = TRUE, sep = ",", dec = ","))
@@ -71,19 +71,23 @@ rm(ve.selectUS, ve.selectJP, ve.selectCH, ve.selectUK, ve.selectEA, ve.selectRU)
 # EA
 df.log_US_EA <- df.log_US_EA[-439,]  # remove NaN rows
 df.log_US_EA <- df.log_US_EA[,-8]    # remove shares
+rownames(df.log_US_EA) <- seq(1:nrow(df.log_US_EA))
 
 # JP
 df.log_US_JP <- df.log_US_JP[-439,]
 df.log_US_JP <- df.log_US_JP[-(1:12),]
+rownames(df.log_US_JP) <- seq(1:nrow(df.log_US_JP))
 
 # RU
 df.log_US_RU <- df.log_US_RU[-(436:439),]
 df.log_US_RU <- df.log_US_RU[-(1:198),]
 df.log_US_RU <- df.log_US_RU[,-8]
+rownames(df.log_US_RU) <- seq(1:nrow(df.log_US_RU))
 
 # UK
 df.log_US_UK <- df.log_US_UK[-439,]
 df.log_US_UK <- df.log_US_UK[-(1:96),]
+rownames(df.log_US_UK) <- seq(1:nrow(df.log_US_UK))
 
 ve.errorEA <- summary(lm(s~., data=df.log_US_EA))$residuals
 ve.errorJP <- summary(lm(s~., data=df.log_US_JP))$residuals
