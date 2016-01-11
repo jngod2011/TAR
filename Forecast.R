@@ -27,8 +27,11 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
     ve.r <- c(-Inf, list.thresholds$list.thresholds$df.thresholds$SSR, Inf)
     ve.r <- ve.r[order(ve.r)]
     df.exoPred <- getDumvarPredictions(df.data, inSample = a, dMax = dMax, n.ahead = n.ahead) 
-    df.predictions <- NULL
+    df.predictionsTVECM <- NULL
+    df.predictionsRW <- NULL
+    df.predictionsRWD <- NULL
     
+    # TVECM predictions
     for (i in a:(N - 1)) {
         df.inSample <- NULL
         ve.error <- NULL
@@ -53,12 +56,34 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
         mod.VECM <- VECM(df.vecmFull[list.regimes[[currentRegime]], -ncol(df.vecmFull) ], lag = lagOrder,
                 exogen = df.vecmFull[list.regimes[[currentRegime]], "ve.threshDMax"])
         
-        df.predictions <- rbind.data.frame(df.predictions, 
+        df.predictionsTVECM <- rbind.data.frame(df.predictionsTVECM, 
                 predict(mod.VECM, n.ahead = 1, exoPred = matrix(df.exoPred[(i - a + 1), 1])))        
     }
-        
-    df.eval <- cbind.data.frame(tail(df.data[, "s"], nrow(df.predictions)), df.predictions[, "s"])
-    colnames(df.eval)[2] <- "predictions"
+    
+   # RW /wo drift predictions
+    for (i in a:(N - 1)) {
+        df.inSample <- NULL
+        df.inSample <- df.data[1:i, ]
+        df.predictionsRW <- rbind.data.frame(df.predictionsRW, 
+                rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
+    }
+    
+    # RW /w drift predictions
+    for (i in a:(N - 1)) {
+        df.inSample <- NULL
+        df.inSample <- df.data[1:i, ]
+        df.predictionsRWD <- rbind.data.frame(df.predictionsRWD, 
+                rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])
+    }
+    
+    
+    
+    df.eval <- cbind.data.frame(tail(df.data[, "s"], nrow(df.predictions)), df.predictionsTVECM[, "s"])
+    colnames(df.eval)[2] <- "TVECM"
+
+    
+    
+    
     RMSE <- sqrt(mean((df.eval[, 1] - df.eval[, 2]) * (df.eval[, 1] - df.eval[, 2])))
 }
 
