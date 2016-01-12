@@ -75,18 +75,53 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
         df.predictionsRWD <- rbind.data.frame(df.predictionsRWD, 
                 rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])
     }
-    
-    
-    
-    df.eval <- cbind.data.frame(tail(df.data[, "s"], nrow(df.predictions)), df.predictionsTVECM[, "s"])
-    colnames(df.eval)[2] <- "TVECM"
+        
+    df.eval <- data.frame(tail(df.data[, "s"], nrow(df.predictionsTVECM)), 
+            df.predictionsTVECM[, "s"], 
+            df.predictionsRW, 
+            df.predictionsRWD)
+    colnames(df.eval) <- c("s", "TVECM", "RW", "RWD")
+
+    # TODO: get evaluations
 
     
-    
-    
-    RMSE <- sqrt(mean((df.eval[, 1] - df.eval[, 2]) * (df.eval[, 1] - df.eval[, 2])))
 }
 
+# directional value
+getDV <- function(ve.actual, ve.prediction) {
+    ve.actualDOC <- NULL
+    ve.predictionDOC <- NULL
+    
+    for (i in 2:length(ve.actual)) {
+        ve.predictionDOC <- c(ve.predictionDOC, ve.prediction[i] > ve.prediction[i - 1])
+        ve.actualDOC <- c(ve.actualDOC, ve.actual[i] > ve.actual[i - 1])
+    }
+    
+    ve.correct <- (ve.predictionDOC == ve.actualDOC) * 1
+    DV <- sum(ve.correct * abs(diff(ve.actual)))
+    
+    return(as.numeric(DV))
+}
+
+# direction of change correct percentage
+getDOC <- function(ve.actual, ve.prediction) {
+    ve.actualDOC <- NULL
+    ve.predictionDOC <- NULL
+    
+    for (i in 2:length(ve.actual)) {
+        ve.predictionDOC <- c(ve.predictionDOC, ve.prediction[i] > ve.prediction[i - 1])
+        ve.actualDOC <- c(ve.actualDOC, ve.actual[i] > ve.actual[i - 1])
+    }
+    # length(ve.actual) - 1 because one observation is lost in the process - for loop goes from 2:length() 
+    DOC <- table(ve.actualDOC == ve.predictionDOC)["TRUE"] / (length(ve.actual) - 1)
+        
+    return(as.numeric(DOC))
+}
+
+        
+getRMSE <- function(ve.actual, ve.prediction) {
+    return(sqrt(mean((ve.actual - ve.prediction) * (ve.actual - ve.prediction))))
+}
 
 getInSampleSize <- function (df.data, ratio) {
     if (ratio > 1 || ratio < 0) stop("\nInvalid ratio\n")
