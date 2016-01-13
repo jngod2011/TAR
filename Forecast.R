@@ -31,7 +31,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
     df.predictionsRW <- NULL
     df.predictionsRWD <- NULL
     
-    # TVECM predictions
+    # TVECM predictions until element N
     for (i in a:(N - 1)) {
         df.inSample <- NULL
         ve.error <- NULL
@@ -60,7 +60,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
                 predict(mod.VECM, n.ahead = 1, exoPred = matrix(df.exoPred[(i - a + 1), 1])))        
     }
     
-   # RW /wo drift predictions
+   # RW /wo drift predictions until element N
     for (i in a:(N - 1)) {
         df.inSample <- NULL
         df.inSample <- df.data[1:i, ]
@@ -68,7 +68,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
                 rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
     }
     
-    # RW /w drift predictions
+    # RW /w drift predictions until element N
     for (i in a:(N - 1)) {
         df.inSample <- NULL
         df.inSample <- df.data[1:i, ]
@@ -84,6 +84,21 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
 
     # TODO: get evaluations
 
+    
+}
+
+# trade return
+getTRADE <- function(ve.actual, ve.prediction) {
+    ve.signal <- NULL
+    ve.long <- NULL
+    ve.short <- NULL
+    for (i in 2:length(ve.actual)) {
+        ve.long <- c(ve.long, (ve.prediction[i] > ve.actual[i - 1]) * 1)
+        ve.short <- c(ve.short, (ve.prediction[i] < ve.actual[i - 1]) * 1)
+    }
+    # signal says if in period t, based on forecast t+h, position should be long (+1) or short (-1)
+    ve.signal <- ve.long - ve.short
+    TRADE <- sum(ve.signal * diff(ve.actual))  
     
 }
 
