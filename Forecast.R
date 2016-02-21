@@ -18,6 +18,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
     p <- list.thresholds$p
     dMax <- list.thresholds$dMax
     k <- list.thresholds$k
+    F <- list.thresholds$ve.FStats[dMax]
     
     
     ######################## Predictions & Regime splitting #############################
@@ -39,7 +40,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
         df.inSample <- df.data[1:i, ]
         ve.error <- summary(lm(s ~ ., data = df.inSample))$residuals
         
-        ve.threshDMax <- getAR(ve.error, p = dMax)[, dMax + 1]
+        ve.threshDMax <- getAR(ve.error, p = p)[, dMax + 1]
         df.vecmFull <- data.frame(df.data[(p + 1):i, ], ve.threshDMax)
         # determine in which regime to go:
         currentRegime <- as.numeric(table(tail(ve.threshDMax, 1) > ve.r)["TRUE"])
@@ -82,13 +83,32 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
             df.predictionsRWD)
     colnames(df.eval) <- c("s", "TVECM", "RW", "RWD")
 
-    # TODO: get evaluations
+    RMSE.TVECM <- getRMSE(df.eval[,"s"], df.eval[, "TVECM"])
+    RMSE.RW <- getRMSE(df.eval[,"s"], df.eval[, "RW"])
+    RMSE.RWD <- getRMSE(df.eval[,"s"], df.eval[, "RWD"])
+    RMSE.TVECM.norm <- 1
+    RMSE.RW.norm <- RMSE.RW/RMSE.TVECM
+    RMSE.RWD.norm <- RMSE.RWD/RMSE.TVECM
+    
+    DA.TVECM <- getDA(df.eval[,"s"], df.eval[, "TVECM"])
+    DA.RW <- getDA(df.eval[,"s"], df.eval[, "RW"])
+    DA.RWD <- getDA(df.eval[,"s"], df.eval[, "RWD"])
+    
+    RETURN.TVECM <- getRETURN(df.eval[,"s"], df.eval[, "TVECM"])
+    RETURN.RW <- getRETURN(df.eval[,"s"], df.eval[, "RW"])
+    RETURN.RWD <- getRETURN(df.eval[,"s"], df.eval[, "RWD"])
+    
+    df.results <- data.frame(RMSE.TVECM.norm, RMSE.RW.norm, RMSE.RWD.norm, DA.TVECM, DA.RW, DA.RWD, 
+            RETURN.TVECM, RETURN.RW, RETURN.RWD)
+    
+    
+    return(list(p = p, dMax = dMax, F = F, df.results = df.results))
 
     
 }
 
 # trade return
-getTRADE <- function(ve.actual, ve.prediction) {
+getRETURN <- function(ve.actual, ve.prediction) {
     ve.signal <- NULL
     ve.long <- NULL
     ve.short <- NULL
@@ -97,9 +117,10 @@ getTRADE <- function(ve.actual, ve.prediction) {
         ve.short <- c(ve.short, (ve.prediction[i] < ve.actual[i - 1]) * 1)
     }
     # signal says if in period t, based on forecast t+h, position should be long (+1) or short (-1)
-    ve.signal <- ve.long - ve.short
-    TRADE <- sum(ve.signal * diff(ve.actual))  
+    ve.signal <- ve.long - ve.short    
+    RETURN <- sum(ve.signal * diff(log(ve.actual)))
     
+    return(RETURN)
 }
 
 # directional value
@@ -119,7 +140,7 @@ getDV <- function(ve.actual, ve.prediction) {
 }
 
 # direction of change correct percentage
-getDOC <- function(ve.actual, ve.prediction) {
+getDA <- function(ve.actual, ve.prediction) {
     ve.actualDOC <- NULL
     ve.predictionDOC <- NULL
     
@@ -133,6 +154,9 @@ getDOC <- function(ve.actual, ve.prediction) {
     return(as.numeric(DOC))
 }
 
+getMAE <- function(ve.actual, ve.prediction) {
+    
+}
         
 getRMSE <- function(ve.actual, ve.prediction) {
     return(sqrt(mean((ve.actual - ve.prediction) * (ve.actual - ve.prediction))))
