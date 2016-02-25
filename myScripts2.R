@@ -1,17 +1,18 @@
 # 1 black - 2 red - 3 green - 4 blue - 5 cyan - 6 magenta
 
 mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, new = TRUE, interval = 0,
-        grid = TRUE) {
+        grid = TRUE, ylab = -1) {
     dev.new()
-    
+    #pdf(file = "111.pdf", paper = "A4", width=7, height=10)
+    if(ylab == -1) ylab = "ve.series"
     sequence <- seq_len(length(ve.series))
     splitSequence <- sequence[sequence %% interval == 0]
     
     obs <- paste("n = ", length(ve.series), sep = "")
-    plot(ve.series, type = type, col = col, xlab = obs, las = 1, 
+    plot(ve.series, type = type, col = col, xlab = obs, ylab = ylab, las = 1, 
             mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
             cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
-            col.main = 3, main = name)
+            col.main = 1, main = name)
     
     if (grid) grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
     if (min(ve.points > 0)) for (j in 1:length(ve.points)) points(ve.points[j], ve.series[ve.points[j]], pch = 19, col = 2)

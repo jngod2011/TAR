@@ -72,12 +72,15 @@ list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(106, 317), intervalSize 
 list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestRSquared, ]
 list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestAIC, ]
 list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestSSR, ]
-mj.plot(ve.errorJP, grid = TRUE)
+mj.plot(ve.errorJP, grid = TRUE, ylab = "z_t", name = "Deviations USD/JPY")
 # draw thresholds 
-abline(h = c(list.JP.Thresh$ve.thresholdLag[63], list.JP.Thresh$ve.thresholdLag[346]), lty = "dotted", col = 2)
-abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "SSR"], lty = "dotted", col = 2)
-abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "RSquared"], lty = "dotted", col = 3)
-abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "AIC"], lty = "dotted", col = 4)
+#abline(h = c(list.JP.Thresh$ve.thresholdLag[63], list.JP.Thresh$ve.thresholdLag[346]), lty = "dotted", col = 2)
+abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "SSR"], lty = "dotted", col = 2, lwd = 2)
+#abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "RSquared"], lty = "dotted", col = 3)
+#abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "AIC"], lty = "dotted", col = 4)
+abline(h = 0, lty = 1, col = "blue", lwd = 2)
+text(x = 430, y = 0.085, labels="C2", col = "red", cex = 0.8)
+text(x = 430, y = -0.16, labels="C1", col = "red", cex = 0.8)
 
 df.vecm1 <- VECM(data.frame(df.vecmFirstRegime[, 1:8], df.vecmFirstRegime[, 11]), lag = 2)
 
