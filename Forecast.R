@@ -18,7 +18,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
     p <- list.thresholds$p
     dMax <- list.thresholds$dMax
     k <- list.thresholds$k
-    F <- list.thresholds$ve.FStats[dMax]
+    F <- max(list.thresholds$ve.FStats[dMax, ])
     
     
     ######################## Predictions & Regime splitting #############################
@@ -40,7 +40,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
         df.inSample <- df.data[1:i, ]
         ve.error <- summary(lm(s ~ ., data = df.inSample))$residuals
         
-        ve.threshDMax <- getAR(ve.error, p = dMax)[, dMax + 1]
+        ve.threshDMax <- getAR(ve.error, p = p)[, dMax + 1]
         df.vecmFull <- data.frame(df.data[(p + 1):i, ], ve.threshDMax)
         # determine in which regime to go:
         currentRegime <- as.numeric(table(tail(ve.threshDMax, 1) > ve.r)["TRUE"])
@@ -100,11 +100,8 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
     
     df.results <- data.frame(RMSE.TVECM.norm, RMSE.RW.norm, RMSE.RWD.norm, DA.TVECM, DA.RW, DA.RWD, 
             RETURN.TVECM, RETURN.RW, RETURN.RWD)
-    
-    
-    return(list(p = p, dMax = dMax, F = F, df.results = df.results))
-
-    
+        
+    return(list(p = p, dMax = dMax, F = F, df.results = df.results))    
 }
 
 # trade return
@@ -117,8 +114,8 @@ getRETURN <- function(ve.actual, ve.prediction) {
         ve.short <- c(ve.short, (ve.prediction[i] < ve.actual[i - 1]) * 1)
     }
     # signal says if in period t, based on forecast t+h, position should be long (+1) or short (-1)
-    ve.signal <- ve.long - ve.short    
-    RETURN <- sum(ve.signal * diff(log(ve.actual)))
+    ve.signal <- ve.long - ve.short
+    RETURN <- sum(ve.signal * diff((ve.actual)))
     
     return(RETURN)
 }
@@ -141,21 +138,21 @@ getDV <- function(ve.actual, ve.prediction) {
 
 # direction of change correct percentage
 getDA <- function(ve.actual, ve.prediction) {
-    ve.actualDOC <- NULL
-    ve.predictionDOC <- NULL
+    ve.actualDA <- NULL
+    ve.predictionDA <- NULL
     
     for (i in 2:length(ve.actual)) {
-        ve.predictionDOC <- c(ve.predictionDOC, ve.prediction[i] > ve.prediction[i - 1])
-        ve.actualDOC <- c(ve.actualDOC, ve.actual[i] > ve.actual[i - 1])
+        ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.prediction[i - 1])
+        ve.actualDA <- c(ve.actualDA, ve.actual[i] > ve.actual[i - 1])
     }
     # length(ve.actual) - 1 because one observation is lost in the process - for loop goes from 2:length() 
-    DOC <- table(ve.actualDOC == ve.predictionDOC)["TRUE"] / (length(ve.actual) - 1)
+    DA <- table(ve.actualDA == ve.predictionDA)["TRUE"] / (length(ve.actual) - 1)
         
-    return(as.numeric(DOC))
+    return(as.numeric(DA))
 }
 
 getMAE <- function(ve.actual, ve.prediction) {
-    
+    return(mean(abs(ve.actual - ve.prediction)))
 }
         
 getRMSE <- function(ve.actual, ve.prediction) {

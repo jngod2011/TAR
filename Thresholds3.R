@@ -117,9 +117,11 @@ getRangeIndices <- function(candidateIndex, intervalSize = 20) {
     return(ceiling(seq(from = candidateIndex - (intervalSize / 2), to = candidateIndex + (intervalSize / 2))))
 }
 
+
 getMappedIndex <- function(domainIndex, ve.domain, ve.range) {
     return(which(ve.domain[domainIndex] == ve.range))
 }
+
 
 getRegimeIndices <- function(ve.splits, total) {
     ve.splits <- as.numeric(unlist(c(0, ve.splits, total)))
@@ -128,6 +130,7 @@ getRegimeIndices <- function(ve.splits, total) {
     }
     return(list.data)
 }
+
 
 getAdjustedCartesian <- function(df.cartesian, minRegimeSize, maxIndex) {
     df.cartesian <- df.cartesian[abs(1 - df.cartesian[, 1]) >= minRegimeSize, ]

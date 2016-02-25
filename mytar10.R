@@ -17,6 +17,10 @@
 # V9:
 # - removed minor index nuisance that was a necessary implementation feature for the TSAY algorithm in getScatter()
 #
+# V10: 
+# - FStats for descending order also (no real changes expected anyways) 
+#
+#
 # p .. lag order 
 # d .. particular threshold lag
 # S .. set of threshold lags
@@ -25,6 +29,8 @@
 # N .. original sample size
 # n .. sample size after losing observations due to AR terms
 # see 1998 Martens et al, Appendix Step 2
+#
+
 
 testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE, 
         stationary = TRUE, verbose = FALSE) { 
@@ -52,10 +58,11 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
     if (m == -1) m <- getRegimeSize(df.y, stationary, verbose)
     
     # calculate F-test statistic 
-    ve.FStats <- getFStats(df.y, ve.S, p, m, verbose)
+    # will contain 2*p values for ascending and descending sorting
+    ve.FStats <- getFStats(df.y = df.y, ve.S = ve.S, p = p, m = m, verbose = verbose)
     
     # get threshold variable with highest F-statistic
-    dMax <- ve.S[which.max(as.numeric(ve.FStats))]
+    dMax <- ve.S[which(ve.FStats == max(ve.FStats), arr.ind=TRUE)[1]]
     if (verbose) cat("max(F(d)): d* (dMax) = ", dMax, "\n", sep = "")
     
     # get RSquared and t-statistics, estimates for each coefficient according to the threshold variables    
@@ -91,22 +98,19 @@ getFStats <- function(df.y, ve.S, p, m, verbose = FALSE) {
         FStatDescending <- NULL
         ve.predictiveResidualsAscending <- NULL
         ve.predictiveResidualsDescending <- NULL
-        ve.eta <- NULL
+        #ve.eta <- NULL
         h <- max(1, p + 1 - d)
         df.ascending <- df.y[order(df.y[, (d + 1)]), ] # order ascendingly by threshold variable z_(t-d)
         df.descending <- df.y[order(df.y[, (d + 1)], decreasing = TRUE), ] # order descendingly by threshold variable z_(t-d)
         
         # recursively calculate predictive residuals (Martens et al)
         for (i in m:n) {
-            df.regime <- df.ascending[1:i, ]
-            ve.predictiveResidualsAscending <- c(ve.predictiveResidualsAscending, summary(lm(ve.y ~ ., data = df.regime))$residuals[i])
+            df.regimeAscending <- df.ascending[1:i, ]
+            df.regimeDescending <- df.descending[1:i, ]
+            ve.predictiveResidualsAscending <- c(ve.predictiveResidualsAscending, summary(lm(ve.y ~ ., data = df.regimeAscending))$residuals[i])
+            ve.predictiveResidualsDescending <- c(ve.predictiveResidualsDescending, summary(lm(ve.y ~ ., data = df.regimeDescending))$residuals[i])
         }
-        
-        for (i in m:n) {
-            df.regime <- df.descending[1:i, ]
-            ve.predictiveResidualsDescending <- c(ve.predictiveResidualsDescending, summary(lm(ve.y ~ ., data = df.regime))$residuals[i])
-        }
-        
+                
         
         # regress predictive residuals on AR terms, check coefficients. H0: no explanatory power of AR regressors
         # hence we would have a linear model. if there is explanatory power, we prefer a TAR model
@@ -131,7 +135,7 @@ getFStats <- function(df.y, ve.S, p, m, verbose = FALSE) {
         ve.FStatsAscending <- c(ve.FStatsAscending, FStatAscending)
         ve.FStatsDescending <- c(ve.FStatsDescending, FStatDescending)
     }
-    ve.FStats <- c(ve.FStatsAscending, ve.FStatsDescending)
+    ve.FStats <- cbind(ve.FStatsAscending, ve.FStatsDescending)
     
     return(ve.FStats)
 }
