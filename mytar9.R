@@ -19,7 +19,7 @@
 #
 # p .. lag order 
 # d .. particular threshold lag
-# S .. max threshold lag
+# S .. set of threshold lags
 # k .. number of regimes
 # m .. regime starting size
 # N .. original sample size

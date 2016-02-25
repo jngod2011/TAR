@@ -40,7 +40,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1) {
         df.inSample <- df.data[1:i, ]
         ve.error <- summary(lm(s ~ ., data = df.inSample))$residuals
         
-        ve.threshDMax <- getAR(ve.error, p = p)[, dMax + 1]
+        ve.threshDMax <- getAR(ve.error, p = dMax)[, dMax + 1]
         df.vecmFull <- data.frame(df.data[(p + 1):i, ], ve.threshDMax)
         # determine in which regime to go:
         currentRegime <- as.numeric(table(tail(ve.threshDMax, 1) > ve.r)["TRUE"])
