@@ -3,7 +3,7 @@
 # Author: Michi
 ###############################################################################
 
-getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2) {
+getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k = 3) {
   # step 1: split data in in sample/out of sample parts
   nonlinear <- FALSE  
   a <- getInSampleSize(df.data, ratio = ratio)
@@ -16,12 +16,14 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2) {
   # note also that F statistics here will differ from the ones gotten from the ve.error vectors in load.R
   # since the ones in load.R are from models with more observations (not split in in/out of sample)
   ve.error <- summary(lm(s ~ ., data = df.inSample))$residuals
+  
   list.testLinearity <- testLinearity(ve.error)
-  list.thresholds <- getThresholds(list.testLinearity)
-  p <- list.thresholds$p
-  dMax <- list.thresholds$dMax
-  k <- list.thresholds$k
-  F <- max(list.thresholds$ve.FStats[dMax, ])
+  F <- list.testLinearity$F
+  p <- list.testLinearity$p
+  dMax <- list.testLinearity$dMax
+  
+  #k <- list.thresholds$k
+  list.thresholds <- getThresholds(list.testLinearity, k = k)
   
   if(F > Crit) nonlinear <- TRUE else nonlinear <- FALSE
   

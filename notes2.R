@@ -1,5 +1,6 @@
 # remove objects with a similar name
 rm(list = ls(pattern = "^mj"))
+rm(list=ls())
 
 # vector products
 a %*% b     # inner: returns scalar

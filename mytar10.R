@@ -63,7 +63,9 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
     
     # get threshold variable with highest F-statistic
     dMax <- ve.S[which(ve.FStats == max(ve.FStats), arr.ind=TRUE)[1]]
-    if (verbose) cat("max(F(d)): d* (dMax) = ", dMax, "\n", sep = "")
+    F <- max(ve.FStats[dMax, ])
+    df.ordered <- df.y[order(df.y[, (dMax + 1)]), ]
+    ve.thresholdLag <- df.ordered[, (dMax + 1)]
     
     # get RSquared and t-statistics, estimates for each coefficient according to the threshold variables    
     list.scatterAll <- NULL
@@ -75,9 +77,11 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
         list.scatterAll <- c(list.scatterAll, list(df.scatterIncreasing, df.scatterDecreasing))
         names(list.scatterAll)[2 * i - 1] <- paste("df.scatterIncreasing", i, sep = "")
         names(list.scatterAll)[2 * i] <- paste("df.scatterDecreasing", i, sep = "")
-    }    
+    }
     
-    return(list(p = p, dMax = dMax, N = N, m = m, n = N - m - p + 1, 
+    
+    
+    return(list(p = p, dMax = dMax, N = N, m = m, n = N - m - p + 1, F = F, ve.thresholdLag = ve.thresholdLag,  
                     ve.series = ve.series, ve.FStats = ve.FStats, 
                     list.scatterAll = list.scatterAll))
 }

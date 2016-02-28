@@ -6,28 +6,31 @@
 # a regime always includes the last index, so the threshold for the regime is LARGER than the value at the last index:
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
 # if df.thresholdIndices give for example 63, 346, this means regime 1 contains observations 1:63, then 64:346, finally 347:last
-getThresholds <- function(list.data, ve.thresholdLag = -1, ve.indices = NULL, d = -1, intervalSize = 30, 
-        verbose = FALSE, method = 1, increasing = TRUE, minRegimeSize = -1, k = 3) {
+getThresholds <- function(list.data, ve.thresholdLag = -1, d = -1, verbose = FALSE, method = 1, 
+    minRegimeSize = -1, k = k) {
     
     # if no grid is specified, grid search over all data, for k regimes
     # for k = 3: [regime][index][regime][regime][index][regime]
-    if (is.null(ve.indices)) {
-        intervalSize <- floor(((list.data$N - list.data$p - (k - 1)) / 2) / (k - 1))
-        for (i in 1:(k - 1)) ve.indices[i] <- ((2 * i) - i) * intervalSize + i
-    }
+    
     if (d == -1) d <- list.data$dMax
-    if (ve.thresholdLag == -1) ve.thresholdLag <- list.data$list.scatterAll[[(d * 2) - 1]][, 1]
     if (minRegimeSize == -1) minRegimeSize <- list.data$m
+    #df.AR <- getAR(list.data$ve.series, p = list.data$p)
+    #df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
+    ve.thresholdLag <- list.data$ve.thresholdLag
+    
     df.AR <- getAR(list.data$ve.series, p = list.data$p)
     df.ordered <- df.AR[order(df.AR[, (d + 1)]), ]
-    ve.thresholdLag <- df.ordered[, (d + 1)]
-    k <- length(ve.indices) + 1 # number of regimes
     
-    df.gridIndices <- foreach(i = 1:length(ve.indices), .combine = cbind.data.frame) %do% {
-        getRangeIndices(ve.indices[i], intervalSize)
+    start <- 1
+    intervalSize <- floor((list.data$N - list.data$p) / (k - 1))
+    df.indices <- data.frame(rep(NA, intervalSize))
+    for (i in 1:(k - 1)) {
+      df.indices <- data.frame(df.indices, seq(start, intervalSize * i))
+      start <- intervalSize * i + 1
     }
+    df.indices <- df.indices[,-1]    
     
-    df.cartesian <- expand.grid(df.gridIndices)
+    df.cartesian <- expand.grid(df.indices)
     df.adjCartesian <- getAdjustedCartesian(df.cartesian = df.cartesian, minRegimeSize = minRegimeSize, 
             maxIndex = list.data$N - list.data$p)
     
