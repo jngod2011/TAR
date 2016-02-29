@@ -97,3 +97,4 @@ ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
 list.predictionsJP <- getPredictions(df.log_US_JP)
+list.predictionsRU <- getPredictions(df.log_US_RU)

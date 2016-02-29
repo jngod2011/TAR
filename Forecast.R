@@ -1,4 +1,4 @@
-# TODO: Add comment
+# all about predictions
 # 
 # Author: Michi
 ###############################################################################
@@ -39,16 +39,16 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     df.predictionsRW <- NULL
     df.predictionsRWD <- NULL  
     df.eval <- NULL
-  
+    
     # TVECM predictions until element N
-    for (i in a:(N - 1)) {
+    for (i in a:(N - n.ahead)) {
       df.inSample <- NULL
       ve.error <- NULL
       
       df.inSample <- df.data[1:i, ]
       ve.error <- summary(lm(s ~ ., data = df.inSample))$residuals
-      
       ve.threshDMax <- getAR(ve.error, p = p)[, dMax + 1]
+      
       df.vecmFull <- data.frame(df.data[(p + 1):i, ], ve.threshDMax)
       # determine in which regime to go:
       currentRegime <- as.numeric(table(tail(ve.threshDMax, 1) > ve.r)["TRUE"])
@@ -61,22 +61,24 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
       }
       
       # lagOrder <- VARselect(df.vecmFull[list.regimes[[currentRegime]], ])$selection[1]
-      lagOrder <- 2
+      # a too large lag number (in the case for russia) can lead to too little observations for single regimes
+      # therefore I just go with dMax + 1
+      lagOrder <- dMax + 1
       mod.VECM <- VECM(df.vecmFull[list.regimes[[currentRegime]], -ncol(df.vecmFull) ], lag = lagOrder,
           exogen = df.vecmFull[list.regimes[[currentRegime]], "ve.threshDMax"])
       
-      df.predictionsTVECM <- rbind.data.frame(df.predictionsTVECM, 
-          predict(mod.VECM, n.ahead = 1, exoPred = matrix(df.exoPred[(i - a + 1), 1])))        
+      df.predictionsTVECM <- rbind.data.frame(df.predictionsTVECM,
+          predict(mod.VECM, n.ahead = 1, exoPred = matrix(df.exoPred[(i - a + 1), 1])))
       
       # RW /wo drift predictions until element N
-      df.predictionsRW <- rbind.data.frame(df.predictionsRW, 
+      df.predictionsRW <- rbind.data.frame(df.predictionsRW,
           rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
       
       # RW /w drift predictions until element N
-      df.predictionsRWD <- rbind.data.frame(df.predictionsRWD, 
-          rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])      
+      df.predictionsRWD <- rbind.data.frame(df.predictionsRWD,
+          rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])
     }
-        
+    
     df.eval <- data.frame(tail(df.data[, "s"], nrow(df.predictionsTVECM)), 
         df.predictionsTVECM[, "s"], 
         df.predictionsRW, 
@@ -97,7 +99,6 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     MAE.RW.norm <- MAE.RW/MAE.TVECM
     MAE.RWD.norm <- MAE.RWD/MAE.TVECM
     
-    
     DA.TVECM <- getDA(df.eval[,"s"], df.eval[, "TVECM"])
     DA.RW <- getDA(df.eval[,"s"], df.eval[, "RW"])
     DA.RWD <- getDA(df.eval[,"s"], df.eval[, "RWD"])
@@ -114,24 +115,24 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     df.predictionsRWD <- NULL
     df.eval <- NULL
     
-    for (i in a:(N - 1)) {
+    for (i in a:(N - n.ahead)) {
       
       #df.vecmFull <- data.frame(df.data[(p + 1):i, ])
       df.inSample <- NULL
       df.inSample <- df.data[1:i, ]
-            
+      
       # lagOrder <- VARselect(df.vecmFull[list.regimes[[currentRegime]], ])$selection[1]
-      lagOrder <- p
+      lagOrder <- dMax + 1
       mod.VECM <- VECM(df.inSample, lag = lagOrder)
-      df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = 1))
+      df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = n.ahead))
       
       # RW /wo drift predictions until element N
       df.predictionsRW <- rbind.data.frame(df.predictionsRW, 
-            rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
-            
+          rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
+      
       # RW /w drift predictions until element N
       df.predictionsRWD <- rbind.data.frame(df.predictionsRWD, 
-            rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])     
+          rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])     
     }
     
     df.eval <- data.frame(tail(df.data[, "s"], nrow(df.predictionsVECM)), 
@@ -165,7 +166,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     df.results <- data.frame(RMSE.VECM.norm, RMSE.RW.norm, RMSE.RWD.norm, MAE.VECM.norm, MAE.RW.norm, MAE.RWD.norm, DA.VECM, DA.RW, DA.RWD, 
         trade.VECM, trade.RW, trade.RWD) 
   }
-    
+  
   return(list(p = p, dMax = dMax, F = F, df.results = df.results))    
 }
 
@@ -188,12 +189,12 @@ getTrade <- function(ve.actual, ve.prediction) {
 
 # directional value
 getDV <- function(ve.actual, ve.prediction) {
-  ve.actualDOC <- NULL
-  ve.predictionDOC <- NULL
+  ve.actualDV <- NULL
+  ve.predictionDV <- NULL
   
   for (i in 2:length(ve.actual)) {
-    ve.predictionDOC <- c(ve.predictionDOC, ve.prediction[i] > ve.prediction[i - 1])
-    ve.actualDOC <- c(ve.actualDOC, ve.actual[i] > ve.actual[i - 1])
+    ve.predictionDV <- c(ve.predictionDV, ve.prediction[i] > ve.actual[i - 1])
+    ve.actualDV <- c(ve.actualDV, ve.actual[i] > ve.actual[i - 1])
   }
   
   ve.correct <- (ve.predictionDOC == ve.actualDOC) * 1
@@ -208,7 +209,7 @@ getDA <- function(ve.actual, ve.prediction) {
   ve.predictionDA <- NULL
   
   for (i in 2:length(ve.actual)) {
-    ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.prediction[i - 1])
+    ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.actual[i - 1])
     ve.actualDA <- c(ve.actualDA, ve.actual[i] > ve.actual[i - 1])
   }
   # length(ve.actual) - 1 because one observation is lost in the process - for loop goes from 2:length() 
