@@ -90,8 +90,10 @@ df.log_US_UK <- df.log_US_UK[-439,]       # remove NaN rows
 df.log_US_UK <- df.log_US_UK[-(1:96),]    # remove NaN rows
 rownames(df.log_US_UK) <- seq(1:nrow(df.log_US_UK))
 
+# deviations
 ve.errorEA <- summary(lm(s~., data=df.log_US_EA))$residuals
 ve.errorJP <- summary(lm(s~., data=df.log_US_JP))$residuals
 ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
+list.predictionsJP <- getPredictions(df.log_US_JP)

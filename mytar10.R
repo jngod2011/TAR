@@ -32,10 +32,10 @@
 #
 
 
-testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE, 
+testLinearity <- function(ve.error, p = -1, ve.S = -1, m = -1, constant = FALSE, 
         stationary = TRUE, verbose = FALSE) { 
     
-    ve.y <- as.numeric(ve.series)
+    ve.y <- as.numeric(ve.error)
     N <- as.numeric(length(ve.y))
     
     # auto select lag order p
@@ -82,7 +82,7 @@ testLinearity <- function(ve.series, p = -1, ve.S = -1, m = -1, constant = FALSE
     
     
     return(list(p = p, dMax = dMax, N = N, m = m, n = N - m - p + 1, F = F, ve.thresholdLag = ve.thresholdLag,  
-                    ve.series = ve.series, ve.FStats = ve.FStats, 
+                    ve.error = ve.error, ve.FStats = ve.FStats, 
                     list.scatterAll = list.scatterAll))
 }
 

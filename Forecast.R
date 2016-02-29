@@ -5,7 +5,7 @@
 
 getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k = 3) {
   # step 1: split data in in sample/out of sample parts
-  nonlinear <- FALSE  
+  nonlinear <- FALSE
   a <- getInSampleSize(df.data, ratio = ratio)
   N <- nrow(df.data)
   df.inSample <- df.data[1:a, ]
