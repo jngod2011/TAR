@@ -29,8 +29,8 @@ getThresholds <- function(list.data, d = -1, method = 1, minRegimeSize = -1, k =
   df.indices <- df.indices[,-1]
   
   df.cartesian <- expand.grid(df.indices)
-  df.adjCartesian <- getAdjustedCartesian(df.cartesian = df.cartesian, minRegimeSize = minRegimeSize, 
-      maxIndex = list.data$N - list.data$p)
+  df.adjCartesian <- getAdjustedCartesian(df.data = df.cartesian, minRegimeSize = minRegimeSize, 
+      maxIndex = list.data$N - list.data$p, k = k)
   
   df.RSquared <- NULL
   df.AdjRSquared <- NULL
@@ -107,14 +107,17 @@ getRegimeIndices <- function(ve.splits, total) {
 }
 
 
-getAdjustedCartesian <- function(df.cartesian, minRegimeSize, maxIndex) {
-  df.cartesian <- df.cartesian[abs(1 - df.cartesian[, 1]) >= minRegimeSize, ]
-  for (i in 1:(ncol(df.cartesian) - 1)) {
-    df.cartesian <- df.cartesian[abs(df.cartesian[, i] - df.cartesian[, i + i]) >= minRegimeSize, ]    
+getAdjustedCartesian <- function(df.data, minRegimeSize, maxIndex, k) {
+  df.data <- data.frame(df.data[abs(1 - df.data[, 1]) >= minRegimeSize, ])
+  if(k > 2) {
+    for (i in 1:(ncol(df.data) - 1)) {
+      df.data <- df.data[abs(df.data[, i] - df.data[, i + i]) >= minRegimeSize, ]    
+    }
   }
-  df.cartesian <- df.cartesian[abs(maxIndex - df.cartesian[, ncol(df.cartesian)]) >= minRegimeSize, ] # check for last column
+  # check for last column
+  df.data <- data.frame(df.data[abs(maxIndex - df.data[, ncol(df.data)]) >= minRegimeSize, ])
   
-  return(df.cartesian)
+  return(df.data)
 }
 
 

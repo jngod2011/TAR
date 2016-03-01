@@ -1,7 +1,6 @@
 # load data
 # delete NaNs and empty columns
 
-
 df.MEI_Master <- data.frame(read.csv("data/02-2016/alldata.csv", header = TRUE, sep = ",", dec = ","))
 ve.selectJP <- c(2,3,4,5,6,7,8,9)
 ve.selectCH <- c(10,11,12,13,14,15,16,17)
@@ -96,5 +95,12 @@ ve.errorJP <- summary(lm(s~., data=df.log_US_JP))$residuals
 ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
-list.predictionsJP <- getPredictions(df.log_US_JP)
-list.predictionsRU <- getPredictions(df.log_US_RU)
+list.predictionsEAK3 <- getPredictions(df.log_US_EA)
+list.predictionsJPK3 <- getPredictions(df.log_US_JP)
+list.predictionsRUK3 <- getPredictions(df.log_US_RU)
+list.predictionsUKK3 <- getPredictions(df.log_US_UK)
+
+list.predictionsEAK2 <- getPredictions(df.log_US_EA, k = 2)
+list.predictionsJPK2 <- getPredictions(df.log_US_JP, k = 2)
+list.predictionsRUK2 <- getPredictions(df.log_US_RU, k = 2)
+list.predictionsUKK2 <- getPredictions(df.log_US_UK, k = 2)
