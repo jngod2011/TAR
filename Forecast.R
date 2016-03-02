@@ -34,7 +34,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     # ve.r are the actual thresholds as described in the literature, including -Inf and Inf
     ve.r <- c(-Inf, list.thresholds$list.thresholds$df.thresholds$SSR, Inf)
     ve.r <- ve.r[order(ve.r)]
-    df.exoPred <- getDumvarPredictions(df.data, inSample = a, dMax = dMax, n.ahead = n.ahead)
+    df.exoPred <- getDumvarPredictions(df.data, inSample = a, dMax = dMax, p = p, n.ahead = n.ahead)
     df.predictionsTVECM <- NULL
     # df.predictionsRW <- NULL
     df.predictionsRWD <- NULL
@@ -83,6 +83,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
         df.predictionsTVECM[, "s"], 
         df.predictionsRWD)
     colnames(df.eval) <- c("s", "TVECM", "RWD")
+    cat(nrow(df.eval), "\n")
     
     RMSE.TVECM <- getRMSE(df.eval[,"s"], df.eval[, "TVECM"])
     #RMSE.RW <- getRMSE(df.eval[,"s"], df.eval[, "RW"])
@@ -102,12 +103,15 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     #DA.RW <- getDA(df.eval[,"s"], df.eval[, "RW"])
     DA.RWD <- getDA(df.eval[,"s"], df.eval[, "RWD"])
     
+    DV.TVECM <- getDV(df.eval[,"s"], df.eval[, "TVECM"])
+    DV.RWD <- getDV(df.eval[,"s"], df.eval[, "RWD"])
+    
     trade.TVECM <- getTrade(df.eval[,"s"], df.eval[, "TVECM"])
     #trade.RW <- getTrade(df.eval[,"s"], df.eval[, "RW"])
     trade.RWD <- getTrade(df.eval[,"s"], df.eval[, "RWD"])
     
-    df.results <- data.frame(RMSE.TVECM, RMSE.RWD, RMSE.TVECM.norm, RMSE.RWD.norm, 
-        MAE.TVECM, MAE.RWD, MAE.TVECM.norm, MAE.RWD.norm, DA.TVECM, DA.RWD, trade.TVECM, trade.RWD)
+    df.results <- data.frame(RMSE.TVECM, RMSE.RWD, RMSE.TVECM.norm, RMSE.RWD.norm, MAE.TVECM, MAE.RWD, 
+        MAE.TVECM.norm, MAE.RWD.norm, DA.TVECM, DA.RWD, DV.TVECM, DV.RWD, trade.TVECM, trade.RWD)
   } else if (!nonlinear) {
     df.predictionsVECM <- NULL
     df.predictionsRW <- NULL
@@ -157,13 +161,16 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     DA.VECM <- getDA(df.eval[,"s"], df.eval[, "VECM"])
     #DA.RW <- getDA(df.eval[,"s"], df.eval[, "RW"])
     DA.RWD <- getDA(df.eval[,"s"], df.eval[, "RWD"])
+
+    DV.VECM <- getDV(df.eval[,"s"], df.eval[, "VECM"])
+    DV.RWD <- getDV(df.eval[,"s"], df.eval[, "RWD"])
     
     trade.VECM <- getTrade(df.eval[,"s"], df.eval[, "VECM"])
     #trade.RW <- getTrade(df.eval[,"s"], df.eval[, "RW"])
     trade.RWD <- getTrade(df.eval[,"s"], df.eval[, "RWD"])
     
-    df.results <- data.frame(RMSE.VECM, RMSE.RWD, RMSE.VECM.norm, RMSE.RWD.norm, 
-        MAE.VECM, MAE.RWD, MAE.VECM.norm, MAE.RWD.norm, DA.VECM, DA.RWD, trade.VECM, trade.RWD) 
+    df.results <- data.frame(RMSE.VECM, RMSE.RWD, RMSE.VECM.norm, RMSE.RWD.norm, MAE.VECM, MAE.RWD, 
+        MAE.VECM.norm, MAE.RWD.norm, DA.VECM, DA.RWD, DV.VECM, DV.RWD, trade.VECM, trade.RWD) 
   }
   
   return(list(p = p, dMax = dMax, F = F, df.results = df.results))    
@@ -177,13 +184,30 @@ getDA <- function(ve.actual, ve.prediction) {
   
   for (i in 2:length(ve.actual)) {
     ve.actualDA <- c(ve.actualDA, ve.actual[i] > ve.actual[i - 1])
-    ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.actual[i - 1])    
+    ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.actual[i - 1])
   }
   # length(ve.actual) - 1 because one observation is lost in the process - for loop goes from 2:length() 
   ve.true <- ve.actualDA == ve.predictionDA
   DA <- table(ve.actualDA == ve.predictionDA)["TRUE"] / (length(ve.actual) - 1)
   
   return(as.numeric(DA))
+}
+
+
+# directional value
+getDV <- function(ve.actual, ve.prediction) {
+  ve.actualDV <- NULL
+  ve.predictionDV <- NULL
+  
+  for (i in 2:length(ve.actual)) {
+    ve.actualDV <- c(ve.actualDV, ve.actual[i] > ve.actual[i - 1])
+    ve.predictionDV <- c(ve.predictionDV, ve.prediction[i] > ve.actual[i - 1])    
+  }
+  
+  ve.correct <- (ve.predictionDOC == ve.actualDOC) * 1
+  DV <- sum(ve.correct * abs(diff(ve.actual)))
+  
+  return(as.numeric(DV))
 }
 
 
@@ -208,22 +232,6 @@ getTrade <- function(ve.actual, ve.prediction) {
   return(ve.return)
 }
 
-# directional value
-getDV <- function(ve.actual, ve.prediction) {
-  ve.actualDV <- NULL
-  ve.predictionDV <- NULL
-  
-  for (i in 2:length(ve.actual)) {
-    ve.predictionDV <- c(ve.predictionDV, ve.prediction[i] > ve.actual[i - 1])
-    ve.actualDV <- c(ve.actualDV, ve.actual[i] > ve.actual[i - 1])
-  }
-  
-  ve.correct <- (ve.predictionDOC == ve.actualDOC) * 1
-  DV <- sum(ve.correct * abs(diff(ve.actual)))
-  
-  return(as.numeric(DV))
-}
-
 
 getMAE <- function(ve.actual, ve.prediction) {
   return(mean(abs(ve.actual - ve.prediction)))
@@ -239,12 +247,24 @@ getInSampleSize <- function (df.data, ratio) {
 }
 
 # predictions for exogenous variable in VAR/VECM
-getDumvarPredictions <- function (df.data, inSample, dMax, n.ahead) {
+getDumvarPredictions <- function (df.data, inSample, dMax, p, n.ahead) {
   df.exogen <- NULL
-  # prediction for threshold lag with d = dMax at time t + n.ahead, calculated at time t, which corresponds to
-  # threshold lag d = dMax + n.ahead at time t.
-  for (i in (inSample):nrow(df.data)) {
-    df.exogen <- c(df.exogen, summary(lm(s ~ ., data = df.data[1:i, ]))$residuals[i - dMax + n.ahead])
+  if(n.ahead <= dMax) {
+    # prediction for threshold lag with d = dMax at time t + n.ahead, calculated at time t, which corresponds to
+    # threshold lag d = dMax + n.ahead at time t.
+    for (i in inSample:(nrow(df.data) - n.ahead)) {
+      df.exogen <- c(df.exogen, summary(lm(s ~ ., data = df.data[1:i, ]))$residuals[i - dMax + n.ahead])
+    }
+  } else {
+    for (i in inSample:(nrow(df.data) - n.ahead)) {
+      # dMax steps ahead "prediction" of z_{t-d}
+      ve.residuals <- summary(lm(s ~ ., data = df.data[1:i, ]))$residuals
+      
+      # need the remaining n.ahead - dMax steps ahead:
+      lm.ar <- ar(ve.residuals, aic = TRUE)      
+      df.exogen <- c(df.exogen, predict(lm.ar, n.ahead = (n.ahead - dMax))$pred[n.ahead - dMax])      
+    }    
   }
+  cat(length(df.exogen),"\n")
   return(as.data.frame(df.exogen))
 }
