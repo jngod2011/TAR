@@ -95,6 +95,12 @@ ve.errorJP <- summary(lm(s~., data=df.log_US_JP))$residuals
 ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
+df.data <- df.log_US_JP
+ratio <- 0.75
+n.ahead <- 1
+Crit <- 2.32
+k <- 3
+
 list.predictionsEAK3 <- getPredictions(df.log_US_EA)
 list.predictionsJPK3 <- getPredictions(df.log_US_JP)
 list.predictionsRUK3 <- getPredictions(df.log_US_RU)
