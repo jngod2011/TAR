@@ -3,7 +3,7 @@
 # Author: Michi
 ###############################################################################
 
-getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k = 3) {
+getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
   # step 1: split data in in sample/out of sample parts
   nonlinear <- FALSE
   a <- getInSampleSize(df.data, ratio = ratio)
@@ -34,14 +34,17 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     # ve.r are the actual thresholds as described in the literature, including -Inf and Inf
     ve.r <- c(-Inf, list.thresholds$list.thresholds$df.thresholds$SSR, Inf)
     ve.r <- ve.r[order(ve.r)]
-    df.exoPred <- getDumvarPredictions(df.data, inSample = a, dMax = dMax, p = p, n.ahead = n.ahead)
+    # predictions of exogenous variable needs to contain ALL PREDICTIONS if h > 1 as well. example:
+    # consider a = 10 and h = 2. you also need the predictions for h = 1 in order to get the one for h = 2.
+    # therefore the length of the df.exoPred vector does NOT correspond to the ultimate amount of predictions
+    # we will get. 
     df.predictionsTVECM <- NULL
     # df.predictionsRW <- NULL
     df.predictionsRWD <- NULL
     df.eval <- NULL
     
     # TVECM predictions until element N
-    for (i in a:(N - n.ahead)) {
+    for (i in a:(N - h)) {
       df.inSample <- NULL
       ve.error <- NULL
       
@@ -67,48 +70,43 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
       mod.VECM <- VECM(df.vecmFull[list.regimes[[currentRegime]], -ncol(df.vecmFull) ], lag = lagOrder,
           exogen = df.vecmFull[list.regimes[[currentRegime]], "ve.threshDMax"])
       
+      df.exoPred <- getDumvarPredictions(df.data, inSample = i, dMax = dMax, p = p, h = h)
       df.predictionsTVECM <- rbind.data.frame(df.predictionsTVECM,
-          predict(mod.VECM, n.ahead = 1, exoPred = matrix(df.exoPred[(i - a + 1), 1])))
-      
-      # RW /wo drift predictions until element N
-      # df.predictionsRW <- rbind.data.frame(df.predictionsRW,
-      #    rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
-      
+          # predict(mod.VECM, n.ahead = h, exoPred = matrix(df.exoPred[(i - a + 1):(i - a + h), 1]))[h, ])
+            predict(mod.VECM, n.ahead = h, exoPred = as.matrix(df.exoPred))[h, ])
+    
       # RW /w drift predictions until element N
       df.predictionsRWD <- rbind.data.frame(df.predictionsRWD,
-          rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])
+          rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[1])
     }
     
-    df.eval <- data.frame(tail(df.data[, "s"], nrow(df.predictionsTVECM)), 
-        df.predictionsTVECM[, "s"], 
-        df.predictionsRWD)
-    colnames(df.eval) <- c("s", "TVECM", "RWD")
+    colnames(df.predictionsTVECM) <- colnames(df.data)
+    df.eval <- data.frame(df.data[(a:(nrow(df.data) - h)), "s"],
+            tail(df.data[, "s"], 
+            nrow(df.predictionsTVECM)),
+            df.predictionsTVECM[, "s"], 
+            df.predictionsRWD)
+    colnames(df.eval) <- c("s_t", "s_t+h", "TVECM", "RWD")
     cat(nrow(df.eval), "\n")
     
-    RMSE.TVECM <- getRMSE(df.eval[,"s"], df.eval[, "TVECM"])
-    #RMSE.RW <- getRMSE(df.eval[,"s"], df.eval[, "RW"])
-    RMSE.RWD <- getRMSE(df.eval[,"s"], df.eval[, "RWD"])
+    RMSE.TVECM <- getRMSE(df.eval[,"s_t+h"], df.eval[, "TVECM"])
+    RMSE.RWD <- getRMSE(df.eval[,"s_t+h"], df.eval[, "RWD"])
     RMSE.TVECM.norm <- 1
-    #RMSE.RW.norm <- RMSE.RW/RMSE.TVECM
     RMSE.RWD.norm <- RMSE.RWD/RMSE.TVECM
     
-    MAE.TVECM <- getMAE(df.eval[,"s"], df.eval[, "TVECM"])
-    #MAE.RW <- getMAE(df.eval[,"s"], df.eval[, "RW"])
-    MAE.RWD <- getMAE(df.eval[,"s"], df.eval[, "RWD"])
+    MAE.TVECM <- getMAE(df.eval[,"s_t+h"], df.eval[, "TVECM"])
+    MAE.RWD <- getMAE(df.eval[,"s_t+h"], df.eval[, "RWD"])
     MAE.TVECM.norm <- 1
-    #MAE.RW.norm <- MAE.RW/MAE.TVECM
     MAE.RWD.norm <- MAE.RWD/MAE.TVECM
     
-    DA.TVECM <- getDA(df.eval[,"s"], df.eval[, "TVECM"])
-    #DA.RW <- getDA(df.eval[,"s"], df.eval[, "RW"])
-    DA.RWD <- getDA(df.eval[,"s"], df.eval[, "RWD"])
+    DA.TVECM <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "TVECM"])
+    DA.RWD <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
-    DV.TVECM <- getDV(df.eval[,"s"], df.eval[, "TVECM"])
-    DV.RWD <- getDV(df.eval[,"s"], df.eval[, "RWD"])
+    DV.TVECM <- getDV(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "TVECM"])
+    DV.RWD <- getDV(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
-    trade.TVECM <- getTrade(df.eval[,"s"], df.eval[, "TVECM"])
-    #trade.RW <- getTrade(df.eval[,"s"], df.eval[, "RW"])
-    trade.RWD <- getTrade(df.eval[,"s"], df.eval[, "RWD"])
+    trade.TVECM <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "TVECM"])
+    trade.RWD <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
     df.results <- data.frame(RMSE.TVECM, RMSE.RWD, RMSE.TVECM.norm, RMSE.RWD.norm, MAE.TVECM, MAE.RWD, 
         MAE.TVECM.norm, MAE.RWD.norm, DA.TVECM, DA.RWD, DV.TVECM, DV.RWD, trade.TVECM, trade.RWD)
@@ -118,7 +116,7 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
     df.predictionsRWD <- NULL
     df.eval <- NULL
     
-    for (i in a:(N - n.ahead)) {
+    for (i in a:(N - h)) {
       
       #df.vecmFull <- data.frame(df.data[(p + 1):i, ])
       df.inSample <- NULL
@@ -127,107 +125,98 @@ getPredictions <- function (df.data, ratio = 0.75, n.ahead = 1, Crit = 2.32, k =
       # lagOrder <- VARselect(df.vecmFull[list.regimes[[currentRegime]], ])$selection[1]
       lagOrder <- dMax + 1
       mod.VECM <- VECM(df.inSample, lag = lagOrder)
-      df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = n.ahead))
-      
-      # RW /wo drift predictions until element N
-      df.predictionsRW <- rbind.data.frame(df.predictionsRW, 
-          rwf(df.inSample[, 1], h = n.ahead, drift = FALSE)$mean[1])
+      df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = h))
       
       # RW /w drift predictions until element N
       df.predictionsRWD <- rbind.data.frame(df.predictionsRWD, 
-          rwf(df.inSample[, 1], h = n.ahead, drift = TRUE)$mean[1])     
+          rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[1])     
     }
     
-    df.eval <- data.frame(tail(df.data[, "s"], nrow(df.predictionsVECM)), 
+    df.eval <- data.frame(df.data[(a:(nrow(df.data) - h)), "s"],
+        tail(df.data[, "s"], nrow(df.predictionsVECM)),
         df.predictionsVECM[, "s"], 
-        df.predictionsRW, 
         df.predictionsRWD)
-    colnames(df.eval) <- c("s", "VECM", "RW", "RWD")
+    colnames(df.eval) <- c("s_t", "s_t+h", "VECM", "RWD")
     
-    RMSE.VECM <- getRMSE(df.eval[,"s"], df.eval[, "VECM"])
-    #RMSE.RW <- getRMSE(df.eval[,"s"], df.eval[, "RW"])
-    RMSE.RWD <- getRMSE(df.eval[,"s"], df.eval[, "RWD"])
+    RMSE.VECM <- getRMSE( df.eval[, "s_t+h"], df.eval[, "VECM"])
+    RMSE.RWD <- getRMSE(df.eval[, "s_t+h"], df.eval[, "RWD"])
     RMSE.VECM.norm <- 1
-    #RMSE.RW.norm <- RMSE.RW/RMSE.VECM
     RMSE.RWD.norm <- RMSE.RWD/RMSE.VECM
     
-    MAE.VECM <- getMAE(df.eval[,"s"], df.eval[, "VECM"])
-    #MAE.RW <- getMAE(df.eval[,"s"], df.eval[, "RW"])
-    MAE.RWD <- getMAE(df.eval[,"s"], df.eval[, "RWD"])
+    MAE.VECM <- getMAE(df.eval[, "s_t+h"], df.eval[, "VECM"])
+    MAE.RWD <- getMAE(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     MAE.VECM.norm <- 1
-    #MAE.RW.norm <- MAE.RW/MAE.VECM
     MAE.RWD.norm <- MAE.RWD/MAE.VECM
     
-    DA.VECM <- getDA(df.eval[,"s"], df.eval[, "VECM"])
-    #DA.RW <- getDA(df.eval[,"s"], df.eval[, "RW"])
-    DA.RWD <- getDA(df.eval[,"s"], df.eval[, "RWD"])
+    DA.VECM <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
+    DA.RWD <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
 
-    DV.VECM <- getDV(df.eval[,"s"], df.eval[, "VECM"])
-    DV.RWD <- getDV(df.eval[,"s"], df.eval[, "RWD"])
+    DV.VECM <- getDV(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
+    DV.RWD <- getDV(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
-    trade.VECM <- getTrade(df.eval[,"s"], df.eval[, "VECM"])
-    #trade.RW <- getTrade(df.eval[,"s"], df.eval[, "RW"])
-    trade.RWD <- getTrade(df.eval[,"s"], df.eval[, "RWD"])
+    trade.VECM <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
+    trade.RWD <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
     df.results <- data.frame(RMSE.VECM, RMSE.RWD, RMSE.VECM.norm, RMSE.RWD.norm, MAE.VECM, MAE.RWD, 
         MAE.VECM.norm, MAE.RWD.norm, DA.VECM, DA.RWD, DV.VECM, DV.RWD, trade.VECM, trade.RWD) 
   }
   
-  return(list(p = p, dMax = dMax, F = F, df.results = df.results))    
+  return(list(p = p, dMax = dMax, F = F, df.results = df.results))
 }
 
 
 # direction of change correct percentage
-getDA <- function(ve.actual, ve.prediction) {
-  ve.actualDA <- NULL
-  ve.predictionDA <- NULL
+getDA <- function(ve.origin, ve.actual, ve.prediction) {
+  ve.actualDirection <- NULL
+  ve.predictionDirection <- NULL
   
-  for (i in 2:length(ve.actual)) {
-    ve.actualDA <- c(ve.actualDA, ve.actual[i] > ve.actual[i - 1])
-    ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.actual[i - 1])
+  for (i in 1:length(ve.actual)) {
+    ve.actualDirection <- c(ve.actualDirection, ve.actual[i] > ve.origin[i])
+    ve.predictionDirection <- c(ve.predictionDirection, ve.prediction[i] > ve.origin[i])
   }
-  # length(ve.actual) - 1 because one observation is lost in the process - for loop goes from 2:length() 
-  ve.true <- ve.actualDA == ve.predictionDA
-  DA <- table(ve.actualDA == ve.predictionDA)["TRUE"] / (length(ve.actual) - 1)
+  
+  ve.true <- (ve.actualDirection == ve.predictionDirection) * 1
+  DA <- mean(ve.true)
+  #DA <- table(ve.true)["TRUE"] / length(ve.true)
   
   return(as.numeric(DA))
 }
 
 
 # directional value
-getDV <- function(ve.actual, ve.prediction) {
-  ve.actualDV <- NULL
-  ve.predictionDV <- NULL
+getDV <- function(ve.origin, ve.actual, ve.prediction) {
+  ve.actualDirection <- NULL
+  ve.predictionDirection <- NULL
   
-  for (i in 2:length(ve.actual)) {
-    ve.actualDV <- c(ve.actualDV, ve.actual[i] > ve.actual[i - 1])
-    ve.predictionDV <- c(ve.predictionDV, ve.prediction[i] > ve.actual[i - 1])    
+  for (i in 1:length(ve.actual)) {
+    ve.actualDirection <- c(ve.actualDirection, ve.actual[i] > ve.origin[i])
+    ve.predictionDirection <- c(ve.predictionDirection, ve.prediction[i] > ve.origin[i])
   }
   
-  ve.correct <- (ve.predictionDOC == ve.actualDOC) * 1
-  DV <- sum(ve.correct * abs(diff(ve.actual)))
+  ve.true <- (ve.predictionDirection == ve.actualDirection) * 1
+  DV <- sum(ve.true * abs(ve.origin - ve.actual))
   
   return(as.numeric(DV))
 }
 
 
 # trade return: predict the correct direction: add to total return. predict it wrong, subtract
-getTrade <- function(ve.actual, ve.prediction) {
-  ve.actualDA <- NULL
-  ve.predictionDA <- NULL
+getTrade <- function(ve.origin, ve.actual, ve.prediction) {
+  ve.actualDirection <- NULL
+  ve.predictionDirection <- NULL
   
-  for (i in 2:length(ve.actual)) {
-    ve.predictionDA <- c(ve.predictionDA, ve.prediction[i] > ve.actual[i - 1])
-    ve.actualDA <- c(ve.actualDA, ve.actual[i] > ve.actual[i - 1])
+  for (i in 1:length(ve.actual)) {
+    ve.actualDirection <- c(ve.actualDirection, ve.actual[i] > ve.origin[i])
+    ve.predictionDirection <- c(ve.predictionDirection, ve.prediction[i] > ve.origin[i])
   }
   
   # convert logical to binary with 1/-1
-  ve.true <- ve.actualDA == ve.predictionDA
+  ve.true <- ve.actualDirection == ve.predictionDirection
   ve.trueBin <- ve.true * 1
   ve.trueBin[ve.trueBin == 0] <- -1
   
-  ve.change <- abs(ve.actual[2:length(ve.actual)] - ve.actual[1:(length(ve.actual) - 1)])
-  ve.return <- sum(ve.change * ve.trueBin) 
+  ve.change <- abs(ve.actual - ve.origin)
+  ve.return <- sum(ve.trueBin * ve.change) 
   
   return(ve.return)
 }
@@ -247,24 +236,21 @@ getInSampleSize <- function (df.data, ratio) {
 }
 
 # predictions for exogenous variable in VAR/VECM
-getDumvarPredictions <- function (df.data, inSample, dMax, p, n.ahead) {
-  df.exogen <- NULL
-  if(n.ahead <= dMax) {
-    # prediction for threshold lag with d = dMax at time t + n.ahead, calculated at time t, which corresponds to
-    # threshold lag d = dMax + n.ahead at time t.
-    for (i in inSample:(nrow(df.data) - n.ahead)) {
-      df.exogen <- c(df.exogen, summary(lm(s ~ ., data = df.data[1:i, ]))$residuals[i - dMax + n.ahead])
-    }
+getDumvarPredictions <- function (df.data, inSample, dMax, p, h) {
+  df.exoPred <- NULL
+  if(h <= dMax) {
+    # prediction for threshold lag with d = dMax at time t + h, calculated at time t, which corresponds to
+    # threshold lag d = dMax + h at time t.
+    ve.residuals <- summary(lm(s ~ ., data = df.data[1:i, ]))$residuals
+    df.exoPred <- ve.residuals[(length(ve.residuals) - dMax + 1):(length(ve.residuals) - dMax + h)]
   } else {
-    for (i in inSample:(nrow(df.data) - n.ahead)) {
-      # dMax steps ahead "prediction" of z_{t-d}
-      ve.residuals <- summary(lm(s ~ ., data = df.data[1:i, ]))$residuals
-      
-      # need the remaining n.ahead - dMax steps ahead:
-      lm.ar <- ar(ve.residuals, aic = TRUE)      
-      df.exogen <- c(df.exogen, predict(lm.ar, n.ahead = (n.ahead - dMax))$pred[n.ahead - dMax])      
-    }    
+    # dMax steps ahead "prediction" of z_{t-d}
+    ve.residuals <- summary(lm(s ~ ., data = df.data[1:i, ]))$residuals
+    df.exoPred <- ve.residuals[(length(ve.residuals) - dMax + 1):length(ve.residuals)]
+    # need the remaining h - dMax steps ahead:
+    # lm.ar <- ar(ve.residuals, aic = TRUE) # AR Forecast of remaining predictions
+    # df.exoPred <- c(df.exoPred, predict(lm.ar, n.ahead = (h - dMax))$pred[h - dMax])
+    df.exoPred <- c(df.exoPred, rwf(ve.residuals, h = (h - dMax), drift = TRUE)$mean)     
   }
-  cat(length(df.exogen),"\n")
-  return(as.data.frame(df.exogen))
+  return(as.data.frame(df.exoPred))
 }

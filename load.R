@@ -97,16 +97,8 @@ ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
 df.data <- df.log_US_JP
 ratio <- 0.75
-n.ahead <- 1
+h <- 1
 Crit <- 2.32
 k <- 3
 
-list.predictionsEAK3 <- getPredictions(df.log_US_EA)
-list.predictionsJPK3 <- getPredictions(df.log_US_JP)
-list.predictionsRUK3 <- getPredictions(df.log_US_RU)
-list.predictionsUKK3 <- getPredictions(df.log_US_UK)
-
-list.predictionsEAK2 <- getPredictions(df.log_US_EA, k = 2)
-list.predictionsJPK2 <- getPredictions(df.log_US_JP, k = 2)
-list.predictionsRUK2 <- getPredictions(df.log_US_RU, k = 2)
-list.predictionsUKK2 <- getPredictions(df.log_US_UK, k = 2)
+list.predictionsJP_k3_h2 <- getPredictions(df.log_US_JP, h = 2)
