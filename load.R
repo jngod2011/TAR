@@ -101,4 +101,15 @@ h <- 1
 Crit <- 2.32
 k <- 3
 
+list.predictionsJP_k3_h1 <- getPredictions(df.log_US_JP, h = 1)
 list.predictionsJP_k3_h2 <- getPredictions(df.log_US_JP, h = 2)
+list.predictionsJP_k3_h3 <- getPredictions(df.log_US_JP, h = 3)
+list.predictionsJP_k3_h4 <- getPredictions(df.log_US_JP, h = 4)
+list.predictionsJP_k3_h5 <- getPredictions(df.log_US_JP, h = 5)
+list.predictionsJP_k3_h6 <- getPredictions(df.log_US_JP, h = 6)
+list.predictionsJP_k3_h7 <- getPredictions(df.log_US_JP, h = 7)
+list.predictionsJP_k3_h8 <- getPredictions(df.log_US_JP, h = 8)
+list.predictionsJP_k3_h9 <- getPredictions(df.log_US_JP, h = 9)
+list.predictionsJP_k3_h10 <- getPredictions(df.log_US_JP, h = 10)
+list.predictionsJP_k3_h11 <- getPredictions(df.log_US_JP, h = 11)
+list.predictionsJP_k3_h12 <- getPredictions(df.log_US_JP, h = 12)

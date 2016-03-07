@@ -108,8 +108,13 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
     trade.TVECM <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "TVECM"])
     trade.RWD <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
+    # trade return per annum
+    trade.TVECM.pa <- (trade.TVECM * 12) / (nrow(df.eval) * h)
+    trade.RWD.pa <- (trade.RWD * 12) / (nrow(df.eval) * h)
+    
     df.results <- data.frame(RMSE.TVECM, RMSE.RWD, RMSE.TVECM.norm, RMSE.RWD.norm, MAE.TVECM, MAE.RWD, 
-        MAE.TVECM.norm, MAE.RWD.norm, DA.TVECM, DA.RWD, DV.TVECM, DV.RWD, trade.TVECM, trade.RWD)
+        MAE.TVECM.norm, MAE.RWD.norm, DA.TVECM, DA.RWD, DV.TVECM, DV.RWD, 
+        trade.TVECM, trade.RWD, trade.TVECM.pa, trade.RWD.pa)
   } else if (!nonlinear) {
     df.predictionsVECM <- NULL
     df.predictionsRW <- NULL
@@ -157,8 +162,13 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
     trade.VECM <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
     trade.RWD <- getTrade(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
+    # trade return per annum
+    trade.VECM.pa <- (trade.VECM * 12) / (nrow(df.eval) * h)
+    trade.RWD.pa <- (trade.RWD * 12) / (nrow(df.eval) * h)
+    
     df.results <- data.frame(RMSE.VECM, RMSE.RWD, RMSE.VECM.norm, RMSE.RWD.norm, MAE.VECM, MAE.RWD, 
-        MAE.VECM.norm, MAE.RWD.norm, DA.VECM, DA.RWD, DV.VECM, DV.RWD, trade.VECM, trade.RWD) 
+        MAE.VECM.norm, MAE.RWD.norm, DA.VECM, DA.RWD, DV.VECM, DV.RWD, 
+        trade.VECM, trade.RWD, trade.VECM.pa, trade.RWD.pa) 
   }
   
   return(list(p = p, dMax = dMax, F = F, df.results = df.results))
