@@ -39,7 +39,6 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
     # therefore the length of the df.exoPred vector does NOT correspond to the ultimate amount of predictions
     # we will get. 
     df.predictionsTVECM <- NULL
-    # df.predictionsRW <- NULL
     df.predictionsRWD <- NULL
     df.eval <- NULL
     
@@ -77,18 +76,17 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
     
       # RW /w drift predictions until element N
       df.predictionsRWD <- rbind.data.frame(df.predictionsRWD,
-          rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[1])
+          rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[h])
     }
     
     colnames(df.predictionsTVECM) <- colnames(df.data)
     df.eval <- data.frame(df.data[(a:(nrow(df.data) - h)), "s"],
-            tail(df.data[, "s"], 
-            nrow(df.predictionsTVECM)),
+            tail(df.data[, "s"], nrow(df.predictionsTVECM)),
             df.predictionsTVECM[, "s"], 
             df.predictionsRWD)
     colnames(df.eval) <- c("s_t", "s_t+h", "TVECM", "RWD")
     cat(nrow(df.eval), "\n")
-    
+        
     RMSE.TVECM <- getRMSE(df.eval[,"s_t+h"], df.eval[, "TVECM"])
     RMSE.RWD <- getRMSE(df.eval[,"s_t+h"], df.eval[, "RWD"])
     RMSE.TVECM.norm <- 1
@@ -117,26 +115,23 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
         trade.TVECM, trade.RWD, trade.TVECM.pa, trade.RWD.pa)
   } else if (!nonlinear) {
     df.predictionsVECM <- NULL
-    df.predictionsRW <- NULL
     df.predictionsRWD <- NULL
     df.eval <- NULL
     
-    for (i in a:(N - h)) {
-      
-      #df.vecmFull <- data.frame(df.data[(p + 1):i, ])
+    for (i in a:(N - h)) {      
       df.inSample <- NULL
       df.inSample <- df.data[1:i, ]
       
-      # lagOrder <- VARselect(df.vecmFull[list.regimes[[currentRegime]], ])$selection[1]
       lagOrder <- dMax + 1
       mod.VECM <- VECM(df.inSample, lag = lagOrder)
-      df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = h))
+      df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = h)[h, ])
       
       # RW /w drift predictions until element N
       df.predictionsRWD <- rbind.data.frame(df.predictionsRWD, 
-          rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[1])     
+          rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[h])     
     }
     
+    colnames(df.predictionsVECM) <- colnames(df.data)
     df.eval <- data.frame(df.data[(a:(nrow(df.data) - h)), "s"],
         tail(df.data[, "s"], nrow(df.predictionsVECM)),
         df.predictionsVECM[, "s"], 
@@ -149,7 +144,7 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
     RMSE.RWD.norm <- RMSE.RWD/RMSE.VECM
     
     MAE.VECM <- getMAE(df.eval[, "s_t+h"], df.eval[, "VECM"])
-    MAE.RWD <- getMAE(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
+    MAE.RWD <- getMAE(df.eval[, "s_t+h"], df.eval[, "RWD"])
     MAE.VECM.norm <- 1
     MAE.RWD.norm <- MAE.RWD/MAE.VECM
     
@@ -251,11 +246,11 @@ getDumvarPredictions <- function (df.data, inSample, dMax, p, h) {
   if(h <= dMax) {
     # prediction for threshold lag with d = dMax at time t + h, calculated at time t, which corresponds to
     # threshold lag d = dMax + h at time t.
-    ve.residuals <- summary(lm(s ~ ., data = df.data[1:i, ]))$residuals
+    ve.residuals <- summary(lm(s ~ ., data = df.data[1:inSample, ]))$residuals
     df.exoPred <- ve.residuals[(length(ve.residuals) - dMax + 1):(length(ve.residuals) - dMax + h)]
   } else {
     # dMax steps ahead "prediction" of z_{t-d}
-    ve.residuals <- summary(lm(s ~ ., data = df.data[1:i, ]))$residuals
+    ve.residuals <- summary(lm(s ~ ., data = df.data[1:inSample, ]))$residuals
     df.exoPred <- ve.residuals[(length(ve.residuals) - dMax + 1):length(ve.residuals)]
     # need the remaining h - dMax steps ahead:
     # lm.ar <- ar(ve.residuals, aic = TRUE) # AR Forecast of remaining predictions

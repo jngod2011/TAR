@@ -96,19 +96,20 @@ ve.errorRU <- summary(lm(s~., data=df.log_US_RU))$residuals
 ve.errorUK <- summary(lm(s~., data=df.log_US_UK))$residuals
 
 df.data <- df.log_US_JP
+df.data <- df.log_US_EA
 ratio <- 0.75
 h <- 1
 Crit <- 2.32
-k <- 3
+k <- 2
 
-system.time(
-list.analysisJP_k3 <- getAnalysis(df.log_US_JP, k = 3, h = 12),
-list.analysisEA_k3 <- getAnalysis(df.log_US_EA, k = 3, h = 12),
-list.analysisUK_k3 <- getAnalysis(df.log_US_UK, k = 3, h = 12),
-list.analysisRU_k3 <- getAnalysis(df.log_US_RU, k = 3, h = 12),
+system.time(list.analysisJP_k2 <- getAnalysis(df.log_US_JP, k = 2, n = 12))
+system.time(list.analysisEA_k2 <- getAnalysis(df.log_US_EA, k = 2, n = 12))
+system.time(list.analysisUK_k2 <- getAnalysis(df.log_US_UK, k = 2, n = 12))
+system.time(list.analysisRU_k2 <- getAnalysis(df.log_US_RU, k = 2, n = 12))
 
-list.analysisJP_k2 <- getAnalysis(df.log_US_JP, k = 2, h = 12),
-list.analysisEA_k2 <- getAnalysis(df.log_US_EA, k = 2, h = 12),
-list.analysisUK_k2 <- getAnalysis(df.log_US_UK, k = 2, h = 12),
-list.analysisRU_k2 <- getAnalysis(df.log_US_RU, k = 2, h = 12)
-)
+system.time(list.analysisJP_k3 <- getAnalysis(df.log_US_JP, k = 3, n = 12))
+system.time(list.analysisEA_k3 <- getAnalysis(df.log_US_EA, k = 3, n = 12))
+system.time(list.analysisUK_k3 <- getAnalysis(df.log_US_UK, k = 3, n = 12))
+system.time(list.analysisRU_k3 <- getAnalysis(df.log_US_RU, k = 3, n = 12))
+
+
