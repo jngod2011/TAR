@@ -3,7 +3,7 @@
 # Author: Michi
 ###############################################################################
 
-getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
+getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1, method = "SSR") {
   # step 1: split data in in sample/out of sample parts
   nonlinear <- FALSE
   a <- getInSampleSize(df.data, ratio = ratio)
@@ -33,6 +33,8 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1) {
     # a lag of it later enters the VAR/VECM to calculate the predictions 
     # ve.r are the actual thresholds as described in the literature, including -Inf and Inf
     ve.r <- c(-Inf, list.thresholds$list.thresholds$df.thresholds$SSR, Inf)
+    if (method == "AIC") ve.r <- c(-Inf, list.thresholds$list.thresholds$df.thresholds$AIC, Inf)
+    
     ve.r <- ve.r[order(ve.r)]
     # predictions of exogenous variable needs to contain ALL PREDICTIONS if h > 1 as well. example:
     # consider a = 10 and h = 2. you also need the predictions for h = 1 in order to get the one for h = 2.

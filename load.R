@@ -112,4 +112,47 @@ system.time(list.analysisEA_k3 <- getAnalysis(df.log_US_EA, k = 3, n = 12))
 system.time(list.analysisUK_k3 <- getAnalysis(df.log_US_UK, k = 3, n = 12))
 system.time(list.analysisRU_k3 <- getAnalysis(df.log_US_RU, k = 3, n = 12))
 
+# k2 AIC
+list.analysisEA_k2_AIC <- getAnalysis(df.log_US_EA, k = 2, n = 12, method = "AIC")
+list.tableEA_k2_AIC <- formatTables(list.analysisEA_k2_AIC)
+tex.tableEA1_k2_AIC <- xtable(list.tableEA_k2_AIC$df.table1, label = "test", digits = 6)
+tex.tableEA2_k2_AIC <- xtable(list.tableEA_k2_AIC$df.table2, label = "EA2 k2 ", digits = 6)
 
+list.analysisJP_k2_AIC <- getAnalysis(df.log_US_JP, k = 2, n = 12, method = "AIC")
+list.tableJP_k2_AIC <- formatTables(list.analysisJP_k2_AIC)
+tex.tableJP1_k2_AIC <- xtable(list.tableJP_k2_AIC$df.table1, label = "JP1 k2 AIC", digits = 6)
+tex.tableJP2_k2_AIC <- xtable(list.tableJP_k2_AIC$df.table2, label = "JP2 k2 AIC", digits = 6)
+
+list.analysisRU_k2_AIC <- getAnalysis(df.log_US_RU, k = 2, n = 12, method = "AIC")
+list.tableRU_k2_AIC <- formatTables(list.analysisRU_k2_AIC)
+tex.tableRU1_k2_AIC <- xtable(list.tableRU_k2_AIC$df.table1, label = "RU1 k2 AIC", digits = 6)
+tex.tableRU2_k2_AIC <- xtable(list.tableRU_k2_AIC$df.table2, label = "RU2 k2 AIC", digits = 6)
+
+list.analysisUK_k2_AIC <- getAnalysis(df.log_US_UK, k = 2, n = 12, method = "AIC")
+list.tableUK_k2_AIC <- formatTables(list.analysisUK_k2_AIC)
+tex.tableUK1_k2_AIC <- xtable(list.tableUK_k2_AIC$df.table1, label = "UK1 k2 AIC", digits = 6)
+tex.tableUK2_k2_AIC <- xtable(list.tableUK_k2_AIC$df.table2, label = "UK2 k2 AIC", digits = 6)
+
+# k3 AIC
+list.analysisEA_k3_AIC <- getAnalysis(df.log_US_EA, k = 3, n = 12, method = "AIC")
+list.tableEA_k3_AIC <- formatTables(list.analysisEA_k3_AIC)
+tex.tableEA1_k3_AIC <- xtable(list.tableEA_k3_AIC$df.table1, label = "test", digits = 6)
+tex.tableEA2_k3_AIC <- xtable(list.tableEA_k3_AIC$df.table2, label = "EA2 k2 ", digits = 6)
+
+list.analysisJP_k3_AIC <- getAnalysis(df.log_US_JP, k = 3, n = 12, method = "AIC")
+list.tableJP_k3_AIC <- formatTables(list.analysisJP_k3_AIC)
+tex.tableJP1_k3_AIC <- xtable(list.tableJP_k3_AIC$df.table1, label = "JP1 k2 AIC", digits = 6)
+tex.tableJP2_k3_AIC <- xtable(list.tableJP_k3_AIC$df.table2, label = "JP2 k2 AIC", digits = 6)
+
+list.analysisRU_k3_AIC <- getAnalysis(df.log_US_RU, k = 3, n = 12, method = "AIC")
+list.tableRU_k3_AIC <- formatTables(list.analysisRU_k3_AIC)
+tex.tableRU1_k3_AIC <- xtable(list.tableRU_k3_AIC$df.table1, label = "RU1 k2 AIC", digits = 6)
+tex.tableRU2_k3_AIC <- xtable(list.tableRU_k3_AIC$df.table2, label = "RU2 k2 AIC", digits = 6)
+
+list.analysisUK_k3_AIC <- getAnalysis(df.log_US_UK, k = 3, n = 12, method = "AIC")
+list.tableUK_k3_AIC <- formatTables(list.analysisUK_k3_AIC)
+tex.tableUK1_k3_AIC <- xtable(list.tableUK_k3_AIC$df.table1, label = "UK1 k2 AIC", digits = 6)
+tex.tableUK2_k3_AIC <- xtable(list.tableUK_k3_AIC$df.table2, label = "UK2 k2 AIC", digits = 6)
+
+df.tableJP <- formatTablesNonlinear(list.analysisJP_k3_AIC, list.analysisJP_k3_SSR)
+xtable(df.tableJP, caption = "Results for USD/JPY with $k = 3$ regimes", label = "tab:5_JP_k3", digits = 6)
