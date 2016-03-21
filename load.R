@@ -102,57 +102,111 @@ h <- 1
 Crit <- 2.32
 k <- 2
 
-system.time(list.analysisJP_k2 <- getAnalysis(df.log_US_JP, k = 2, n = 12))
-system.time(list.analysisEA_k2 <- getAnalysis(df.log_US_EA, k = 2, n = 12))
-system.time(list.analysisUK_k2 <- getAnalysis(df.log_US_UK, k = 2, n = 12))
-system.time(list.analysisRU_k2 <- getAnalysis(df.log_US_RU, k = 2, n = 12))
 
-system.time(list.analysisJP_k3 <- getAnalysis(df.log_US_JP, k = 3, n = 12))
-system.time(list.analysisEA_k3 <- getAnalysis(df.log_US_EA, k = 3, n = 12))
-system.time(list.analysisUK_k3 <- getAnalysis(df.log_US_UK, k = 3, n = 12))
-system.time(list.analysisRU_k3 <- getAnalysis(df.log_US_RU, k = 3, n = 12))
+# USD/EUR - linear model
+list.analysisEA_k2 <- getAnalysis(df.log_US_EA, k = 2, n = 12, method = "AIC")
+df.resultsEA_k2 <- formatTablesLinear(list.analysisEA_k2)
+tex.resultsEA_k2 <- xtable(df.resultsEA_k2, label = "test", digits = 6)
 
-# k2 AIC
-list.analysisEA_k2_AIC <- getAnalysis(df.log_US_EA, k = 2, n = 12, method = "AIC")
-list.tableEA_k2_AIC <- formatTables(list.analysisEA_k2_AIC)
-tex.tableEA1_k2_AIC <- xtable(list.tableEA_k2_AIC$df.table1, label = "test", digits = 6)
-tex.tableEA2_k2_AIC <- xtable(list.tableEA_k2_AIC$df.table2, label = "EA2 k2 ", digits = 6)
+list.analysisEA_k3 <- getAnalysis(df.log_US_EA, k = 3, n = 12, method = "AIC")
+df.resultsEA_k3 <- formatTablesLinear(list.analysisEA_k3)
+tex.resultsEA_k3 <- xtable(df.resultsEA_k3, label = "test", digits = 6)
 
+
+# USD/JPY
 list.analysisJP_k2_AIC <- getAnalysis(df.log_US_JP, k = 2, n = 12, method = "AIC")
-list.tableJP_k2_AIC <- formatTables(list.analysisJP_k2_AIC)
-tex.tableJP1_k2_AIC <- xtable(list.tableJP_k2_AIC$df.table1, label = "JP1 k2 AIC", digits = 6)
-tex.tableJP2_k2_AIC <- xtable(list.tableJP_k2_AIC$df.table2, label = "JP2 k2 AIC", digits = 6)
-
-list.analysisRU_k2_AIC <- getAnalysis(df.log_US_RU, k = 2, n = 12, method = "AIC")
-list.tableRU_k2_AIC <- formatTables(list.analysisRU_k2_AIC)
-tex.tableRU1_k2_AIC <- xtable(list.tableRU_k2_AIC$df.table1, label = "RU1 k2 AIC", digits = 6)
-tex.tableRU2_k2_AIC <- xtable(list.tableRU_k2_AIC$df.table2, label = "RU2 k2 AIC", digits = 6)
-
-list.analysisUK_k2_AIC <- getAnalysis(df.log_US_UK, k = 2, n = 12, method = "AIC")
-list.tableUK_k2_AIC <- formatTables(list.analysisUK_k2_AIC)
-tex.tableUK1_k2_AIC <- xtable(list.tableUK_k2_AIC$df.table1, label = "UK1 k2 AIC", digits = 6)
-tex.tableUK2_k2_AIC <- xtable(list.tableUK_k2_AIC$df.table2, label = "UK2 k2 AIC", digits = 6)
-
-# k3 AIC
-list.analysisEA_k3_AIC <- getAnalysis(df.log_US_EA, k = 3, n = 12, method = "AIC")
-list.tableEA_k3_AIC <- formatTables(list.analysisEA_k3_AIC)
-tex.tableEA1_k3_AIC <- xtable(list.tableEA_k3_AIC$df.table1, label = "test", digits = 6)
-tex.tableEA2_k3_AIC <- xtable(list.tableEA_k3_AIC$df.table2, label = "EA2 k2 ", digits = 6)
+list.analysisJP_k2_SSR <- getAnalysis(df.log_US_JP, k = 2, n = 12, method = "SSR")
+df.resultsJP_k2 <- formatTablesNonlinear(list.analysisJP_k2_AIC, list.analysisJP_k2_SSR)
+tex.resultsJP_k2 <- xtable(df.resultsJP_k2, digits = 6)
 
 list.analysisJP_k3_AIC <- getAnalysis(df.log_US_JP, k = 3, n = 12, method = "AIC")
-list.tableJP_k3_AIC <- formatTables(list.analysisJP_k3_AIC)
-tex.tableJP1_k3_AIC <- xtable(list.tableJP_k3_AIC$df.table1, label = "JP1 k2 AIC", digits = 6)
-tex.tableJP2_k3_AIC <- xtable(list.tableJP_k3_AIC$df.table2, label = "JP2 k2 AIC", digits = 6)
+list.analysisJP_k3_SSR <- getAnalysis(df.log_US_JP, k = 3, n = 12, method = "SSR")
+df.resultsJP_k3 <- formatTablesNonlinear(list.analysisJP_k3_AIC, list.analysisJP_k3_SSR)
+tex.resultsJP_k3 <- xtable(df.resultsJP_k3, digits = 6)
+
+# USD/RUB
+list.analysisRU_k2_AIC <- getAnalysis(df.log_US_RU, k = 2, n = 12, method = "AIC")
+list.analysisRU_k2_SSR <- getAnalysis(df.log_US_RU, k = 2, n = 12, method = "SSR")
+df.resultsRU_k2 <- formatTablesNonlinear(list.analysisRU_k2_AIC, list.analysisRU_k2_SSR)
+tex.resultsRU_k2 <- xtable(df.resultsRU_k2, digits = 6)
 
 list.analysisRU_k3_AIC <- getAnalysis(df.log_US_RU, k = 3, n = 12, method = "AIC")
-list.tableRU_k3_AIC <- formatTables(list.analysisRU_k3_AIC)
-tex.tableRU1_k3_AIC <- xtable(list.tableRU_k3_AIC$df.table1, label = "RU1 k2 AIC", digits = 6)
-tex.tableRU2_k3_AIC <- xtable(list.tableRU_k3_AIC$df.table2, label = "RU2 k2 AIC", digits = 6)
+list.analysisRU_k3_SSR <- getAnalysis(df.log_US_RU, k = 3, n = 12, method = "SSR")
+df.resultsRU_k3 <- formatTablesNonlinear(list.analysisRU_k3_AIC, list.analysisRU_k3_SSR)
+tex.resultsRU_k3 <- xtable(df.resultsRU_k3, digits = 6)
+
+# USD/GBP
+list.analysisUK_k2_AIC <- getAnalysis(df.log_US_UK, k = 2, n = 12, method = "AIC")
+list.analysisUK_k2_SSR <- getAnalysis(df.log_US_UK, k = 2, n = 12, method = "SSR")
+df.resultsUK_k2 <- formatTablesNonlinear(list.analysisUK_k2_AIC, list.analysisUK_k2_SSR)
+tex.resultsUK_k2 <- xtable(df.resultsUK_k2, digits = 6)
 
 list.analysisUK_k3_AIC <- getAnalysis(df.log_US_UK, k = 3, n = 12, method = "AIC")
-list.tableUK_k3_AIC <- formatTables(list.analysisUK_k3_AIC)
-tex.tableUK1_k3_AIC <- xtable(list.tableUK_k3_AIC$df.table1, label = "UK1 k2 AIC", digits = 6)
-tex.tableUK2_k3_AIC <- xtable(list.tableUK_k3_AIC$df.table2, label = "UK2 k2 AIC", digits = 6)
+list.analysisUK_k3_SSR <- getAnalysis(df.log_US_UK, k = 3, n = 12, method = "SSR")
+df.resultsUK_k3 <- formatTablesNonlinear(list.analysisUK_k3_AIC, list.analysisUK_k3_SSR)
+tex.resultsUK_k3 <- xtable(df.resultsUK_k3, digits = 6)
+
+# GFX , mar=c(3.8, 4.3, 1, 1.5)
+par(mfrow = c(2, 1))
+plot(
+    rowMeans(list.thresholds$list.allThresholds$df.AIC), 
+    main = "Aggregated AIC for all regimes of USD/JPY", 
+    ylab = "AIC", 
+    xlab = "Regimes",
+    cex = 0.5,
+    cex.axis = 1,
+    cex.main = 1.3,
+    mgp = c(2.6, 0.8, 0), 
+    las = 1
+)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
+points(
+    x = which.min(rowMeans(list.thresholds$list.allThresholds$df.AIC)), 
+    y = rowMeans(list.thresholds$list.allThresholds$df.AIC)[which.min(rowMeans(list.thresholds$list.allThresholds$df.AIC))], 
+    col = 2, pch = 12, cex = 1.7
+)
+
+plot(
+    rowMeans(list.thresholds$list.allThresholds$df.SSR), 
+    main = "Aggregated SSR for all regimes of USD/JPY", 
+    ylab = "SSR", 
+    xlab = "Regimes",
+    cex = 0.5,
+    cex.axis = 1, 
+    cex.main = 1.3,
+    mgp = c(2.6, 0.8, 0), 
+    las = 1
+)
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)
+points(
+    x = which.min(rowMeans(list.thresholds$list.allThresholds$df.SSR)), 
+    y = rowMeans(list.thresholds$list.allThresholds$df.SSR)[which.min(rowMeans(list.thresholds$list.allThresholds$df.SSR))], 
+    col = 2, pch = 12, cex = 1.7
+)
+par(mfrow = c(1, 1))
+
+# Goodness of Fit Plit
+gfx.JP <- testLinearity(ve.errorJP[1:getInSampleSize(df.log_US_JP, ratio = 0.75)])
+mj.plotList(gfx.JP, column = 2, ylim = c(0.9, 0.965), 
+    main = "Goodness of Fit Development in Recursive OLS for USD/JPY",
+    ylab = "Goodness of Fit"
+) 
+abline(v = 53, col = "darkgrey") # m
+# text for m
+text(57, y = 0.9, labels = "m = 53", adj = NULL,
+    pos = 4, offset = 0, vfont = NULL,               # pos can be NULL, then offset is irrelevant. 
+    cex = 0.75, col = NULL, font = NULL              # 1 = bottom, 2 = left, 3 = top, 4 = right
+)
+legend(220, 0.96, # places a legend at the appropriate place 
+    cex = 0.75,
+    c("Increasing", "Decreasing"), # puts text in the legend
+    lty = c(1, 1), # gives the legend appropriate symbols (lines)
+    lwd = c(1, 1),
+    col = c("violetred", "springgreen") # gives the legend lines the correct color and width
+) 
+
+
+
 
 df.tableJP <- formatTablesNonlinear(list.analysisJP_k3_AIC, list.analysisJP_k3_SSR)
 xtable(df.tableJP, caption = "Results for USD/JPY with $k = 3$ regimes", label = "tab:5_JP_k3", digits = 6)

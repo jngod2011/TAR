@@ -3,7 +3,7 @@
 # Author: Michi
 ###############################################################################
 
-getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1, method = "SSR") {
+getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h = 1, method = "SSR") {
   # step 1: split data in in sample/out of sample parts
   nonlinear <- FALSE
   a <- getInSampleSize(df.data, ratio = ratio)
@@ -17,13 +17,14 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1, me
   # since the ones in load.R are from models with more observations (not split in in/out of sample)
   ve.error <- summary(lm(s ~ ., data = df.inSample))$residuals
   
-  list.testLinearity <- testLinearity(ve.error)
+  list.testLinearity <- testLinearity(ve.error, p = p)
   F <- list.testLinearity$F
   p <- list.testLinearity$p
   dMax <- list.testLinearity$dMax
   
   #k <- list.thresholds$k
   list.thresholds <- getThresholds(list.testLinearity, k = k)
+  
   
   if(F > Crit) nonlinear <- TRUE else nonlinear <- FALSE
   
@@ -91,13 +92,13 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1, me
         
     RMSE.TVECM <- getRMSE(df.eval[,"s_t+h"], df.eval[, "TVECM"])
     RMSE.RWD <- getRMSE(df.eval[,"s_t+h"], df.eval[, "RWD"])
-    RMSE.TVECM.norm <- 1
-    RMSE.RWD.norm <- RMSE.RWD/RMSE.TVECM
+    RMSE.TVECM.norm <- RMSE.TVECM/RMSE.RWD
+    RMSE.RWD.norm <- RMSE.RWD/RMSE.RWD
     
     MAE.TVECM <- getMAE(df.eval[,"s_t+h"], df.eval[, "TVECM"])
     MAE.RWD <- getMAE(df.eval[,"s_t+h"], df.eval[, "RWD"])
-    MAE.TVECM.norm <- 1
-    MAE.RWD.norm <- MAE.RWD/MAE.TVECM
+    MAE.TVECM.norm <- MAE.TVECM/MAE.RWD
+    MAE.RWD.norm <- MAE.RWD/MAE.RWD
     
     DA.TVECM <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "TVECM"])
     DA.RWD <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
@@ -142,13 +143,13 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1, me
     
     RMSE.VECM <- getRMSE( df.eval[, "s_t+h"], df.eval[, "VECM"])
     RMSE.RWD <- getRMSE(df.eval[, "s_t+h"], df.eval[, "RWD"])
-    RMSE.VECM.norm <- 1
-    RMSE.RWD.norm <- RMSE.RWD/RMSE.VECM
+    RMSE.VECM.norm <- RMSE.VECM/RMSE.RWD
+    RMSE.RWD.norm <- RMSE.RWD/RMSE.RWD
     
     MAE.VECM <- getMAE(df.eval[, "s_t+h"], df.eval[, "VECM"])
     MAE.RWD <- getMAE(df.eval[, "s_t+h"], df.eval[, "RWD"])
-    MAE.VECM.norm <- 1
-    MAE.RWD.norm <- MAE.RWD/MAE.VECM
+    MAE.VECM.norm <- MAE.VECM/MAE.RWD
+    MAE.RWD.norm <- MAE.RWD/MAE.RWD
     
     DA.VECM <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
     DA.RWD <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
@@ -168,7 +169,12 @@ getPredictions <- function (df.data, ratio = 0.75, Crit = 2.32, k = 3, h = 1, me
         trade.VECM, trade.RWD, trade.VECM.pa, trade.RWD.pa) 
   }
   
-  return(list(p = p, dMax = dMax, F = F, df.results = df.results))
+  return(list(p = p, dMax = dMax, F = F, method = method, df.results = df.results, 
+          df.thresholds = list.thresholds$list.thresholds$df.thresholds[,method],
+          list.lmAIC = list.thresholds$list.lmAIC,
+          list.lmSSR = list.thresholds$list.lmSSR
+          )
+  )
 }
 
 
@@ -237,7 +243,7 @@ getRMSE <- function(ve.actual, ve.prediction) {
   return(sqrt(mean((ve.actual - ve.prediction) * (ve.actual - ve.prediction))))
 }
 
-getInSampleSize <- function (df.data, ratio) {
+getInSampleSize <- function (df.data, ratio = 0.75) {
   if (ratio > 1 || ratio < 0) stop("\nInvalid ratio\n")
   return(ceiling(nrow(df.data) * ratio))
 }

@@ -7,7 +7,7 @@
 # 1 2 3 4 5 |thr| 6 7 8 |thr| 9 10 11 12 ..
 # if df.thresholdIndices give for example 63, 346, this means regime 1 contains observations 1:63, 
 # then 64:346, finally 347:last
-getThresholds <- function(list.data, d = -1, method = 1, minRegimeSize = -1, k = k) {
+getThresholds <- function(list.data, d = -1, minRegimeSize = -1, k = k) {
   
   # if no grid is specified, grid search over all data, for k regimes
   # for k = 3: [regime][index][regime][regime][index][regime]
@@ -70,6 +70,23 @@ getThresholds <- function(list.data, d = -1, method = 1, minRegimeSize = -1, k =
   bestSSR <- which.min(as.numeric(rowMeans(df.SSR)))
   bestAIC <- which.min(as.numeric(rowMeans(df.AIC)))
   bestBIC <- which.min(as.numeric(rowMeans(df.BIC)))
+  list.allThresholds <- list(df.SSR = df.SSR, df.AIC = df.AIC)
+  
+  # coefficients of regimes
+  ve.splitsAIC <- df.adjCartesian[bestAIC, ]  
+  ve.splitsSSR <- df.adjCartesian[bestSSR, ]
+  list.regimeIndicesAIC <- getRegimeIndices(ve.splitsAIC, (list.data$N - list.data$p))
+  list.regimeIndicesSSR <- getRegimeIndices(ve.splitsSSR, (list.data$N - list.data$p))
+  list.lmAIC <- NULL
+  list.lmSSR <- NULL
+  for (j in 1:k) {
+    lm.AIC <- lm(ve.y ~ ., data = df.ordered[list.regimeIndicesAIC[[j]], ])
+    lm.SSR <- lm(ve.y ~ ., data = df.ordered[list.regimeIndicesSSR[[j]], ])
+    list.lmAIC[[j]] <- summary(lm.AIC)    
+    list.lmSSR[[j]] <- summary(lm.SSR)
+    names(list.lmAIC)[j] <- paste("lm.AIC", j, sep = "")
+    names(list.lmSSR)[j] <- paste("lm.SSR", j, sep = "")
+  }
   
   df.thresholds <- cbind.data.frame(
       ve.thresholdLag[as.numeric(df.adjCartesian[bestRSquared, ])],
@@ -78,7 +95,7 @@ getThresholds <- function(list.data, d = -1, method = 1, minRegimeSize = -1, k =
       ve.thresholdLag[as.numeric(df.adjCartesian[bestAIC, ])],
       ve.thresholdLag[as.numeric(df.adjCartesian[bestBIC, ])]
   )
-  colnames(df.thresholds) <- c("RSq", "ARSq", "SSR", "AIC", "BIC")
+  colnames(df.thresholds) <- c("R2", "AR2", "SSR", "AIC", "BIC")
   
   df.thresholdIndices <- cbind.data.frame(
       as.numeric(df.adjCartesian[bestRSquared, ]),
@@ -87,13 +104,14 @@ getThresholds <- function(list.data, d = -1, method = 1, minRegimeSize = -1, k =
       as.numeric(df.adjCartesian[bestAIC, ]),
       as.numeric(df.adjCartesian[bestBIC, ])
   )
-  colnames(df.thresholdIndices) <- c("RSq", "ARSq", "SSR", "AIC", "BIC")
+  colnames(df.thresholdIndices) <- c("R2", "AR2", "SSR", "AIC", "BIC")
   
   list.thresholds <- list(df.adjCartesian = df.adjCartesian, df.RSquared = df.RSquared, 
       df.AdjRSquared = df.AdjRSquared, df.SSR = df.SSR, df.AIC = df.AIC, df.BIC = df.BIC, 
       df.thresholds = df.thresholds, df.thresholdIndices = df.thresholdIndices)
   
-  return(list(ve.thresholdLag = ve.thresholdLag, df.ordered = df.ordered, list.thresholds = list.thresholds))
+  return(list(ve.thresholdLag = ve.thresholdLag, df.ordered = df.ordered, list.allThresholds = list.allThresholds, 
+          list.thresholds = list.thresholds, list.lmAIC = list.lmAIC, list.lmSSR = list.lmSSR))
 }
 
 

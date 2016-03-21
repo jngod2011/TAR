@@ -59,7 +59,7 @@ mj.lines(c(df.scatterDecreasing[, 2], rep(NA, 61)))
 list.JP <- testLinearity(ve.errorJP)
 mj.plotList(list.JP, column = 2, ylim = c(0.91, 0.975), name = "RSquared") # RSquared
 mj.plotList(list.JP, column = 3, ylim = c(7, 28), name = "t-statistics for y_t-1")       # t-Statistic d = 1
-mj.plotList(list.JP, column = 4, ylim=c(-6, -1), name = "t-statistics for y_t-2")        # t-Statistic d = 2
+mj.plotList(list.JP, column = 4, ylim=c(-5.5, -1), name = "t-statistics for y_t-2")        # t-Statistic d = 2
 mj.plotList(list.JP, column = 5, ylim=c(0.5, 3), name = "t-statistics for y_t-3")        # t-Statistic d = 3
 mj.plotList(list.JP, column = 6, ylim=c(-2.6, 0.3), name = "t-statistics for y_t-4")     # t-Statistic d = 4
 list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(145, 290), intervalSize = 10)

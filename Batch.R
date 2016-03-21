@@ -3,23 +3,41 @@
 # Author: Michi
 ###############################################################################
 
-getAnalysis <- function(df.data, k = 3, n = 12, method = "SSR") {
-  list.analysis <- NULL
-  
+getAnalysis <- function(df.data, p = -1, k = 3, n = 12, method = "SSR") {
+  list.analysis <- NULL  
   list.analysis <- foreach (i = 1:n) %do% {
-    getPredictions(df.data, k = k, h = i, method = method)    
-  }
-  return(list.analysis)  
+    getPredictions(df.data, p = p, k = k, h = i, method = method)
+  }  
+  for(i in 1:n) names(list.analysis)[i] <- paste("pred.h", i, sep = "")  
+  return(list.analysis)
 }
 
 formatTablesLinear <- function(list.data) {
   df.table <- list.data[[1]]$df.results
   for (i in 2:length(list.data)) {
     df.table <- rbind.data.frame(df.table, list.data[[i]]$df.results)
-  }  
-  df.table1 <- df.table[, 1:8]
-  df.table2 <- df.table[, 9:16]
-  return(list(df.table1 = df.table1, df.table2 = df.table2))
+  }
+  df.all <- data.frame(
+      df.table[, "RMSE.VECM.norm"],
+      df.table[, "RMSE.RWD.norm"],
+      df.table[, "MAE.VECM.norm"],
+      df.table[, "MAE.RWD.norm"],
+      df.table[, "DA.VECM"],
+      df.table[, "DA.RWD"],
+      df.table[, "DV.VECM"],
+      df.table[, "DV.RWD"],
+      df.table[, "trade.VECM.pa"],
+      df.table[, "trade.RWD.pa"]     
+  )
+  colnames(df.all) <- c(
+      "VECM", "RWD",   
+      "VECM", "RWD",
+      "VECM", "RWD", 
+      "VECM", "RWD",
+      "VECM", "RWD" 
+  )
+  
+  return(df.all)
 }
 
 formatTablesNonlinear <- function(list.dataAIC, list.dataSSR) {
@@ -31,15 +49,9 @@ formatTablesNonlinear <- function(list.dataAIC, list.dataSSR) {
     df.tableSSR <- rbind.data.frame(df.tableSSR, list.dataSSR[[i]]$df.results)
   }
   df.all <- data.frame(
-      df.tableAIC[, "RMSE.TVECM"], 
-      df.tableSSR[, "RMSE.TVECM"],
-      df.tableAIC[, "RMSE.RWD"],
       df.tableAIC[, "RMSE.TVECM"] / df.tableAIC[, "RMSE.RWD"],  # normalize by according RWD 
       df.tableSSR[, "RMSE.TVECM"] / df.tableSSR[, "RMSE.RWD"],
       df.tableAIC[, "RMSE.RWD"] / df.tableAIC[, "RMSE.RWD"],    # just to get a 1 here
-      df.tableAIC[, "MAE.TVECM"], 
-      df.tableSSR[, "MAE.TVECM"],
-      df.tableAIC[, "MAE.RWD"],
       df.tableAIC[, "MAE.TVECM"] / df.tableAIC[, "MAE.RWD"],  # normalize by according RWD 
       df.tableSSR[, "MAE.TVECM"] / df.tableSSR[, "MAE.RWD"],
       df.tableAIC[, "MAE.RWD"] / df.tableAIC[, "MAE.RWD"],    # just to get a 1 here
@@ -49,26 +61,21 @@ formatTablesNonlinear <- function(list.dataAIC, list.dataSSR) {
       df.tableAIC[, "DV.TVECM"],                              # directional value columns
       df.tableSSR[, "DV.TVECM"],
       df.tableAIC[, "DV.RWD"],
-      df.tableAIC[, "trade.TVECM"],                           # trade columns 
-      df.tableSSR[, "trade.TVECM"],
-      df.tableAIC[, "trade.RWD"],
       df.tableAIC[, "trade.TVECM.pa"],                        # annualized trade columns 
       df.tableSSR[, "trade.TVECM.pa"],
       df.tableAIC[, "trade.RWD.pa"]
   )
   colnames(df.all) <- c(
-      "TVECM AIC", "TVECM SSR", "RWD", 
       "TVECM AIC", "TVECM SSR", "RWD",   
-      "TVECM AIC", "TVECM SSR", "RWD", 
       "TVECM AIC", "TVECM SSR", "RWD",
       "TVECM AIC", "TVECM SSR", "RWD", 
       "TVECM AIC", "TVECM SSR", "RWD",
-      "TVECM AIC", "TVECM SSR", "RWD", 
-      "TVECM AIC", "TVECM SSR", "RWD"
+      "TVECM AIC", "TVECM SSR", "RWD" 
       )
       
-  df.table1 <- df.all[,1:12]
-  df.table2 <- df.all[,13:24]
-  return(list(df.table1 = df.table1, df.table2 = df.table2))
+  df.table1 <- df.all[,1:15]
+
+  return(df.table1)
 }
+
 
