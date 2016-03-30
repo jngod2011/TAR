@@ -45,6 +45,12 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
     df.predictionsRWD <- NULL
     df.eval <- NULL
     
+    # lagOrder <- VARselect(df.vecmFull[list.regimes[[currentRegime]], ])$selection[1]
+    # a too large lag number (in the case for russia) can lead to too little observations for single regimes
+    # therefore I just go with dMax + 1
+    # now, change to 1 was needed since dMax + 1 also proved to be unreliable 
+    lagOrder <- 1 
+    
     # TVECM predictions until element N
     for (i in a:(N - h)) {
       df.inSample <- NULL
@@ -65,18 +71,14 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
                 df.vecmFull[, "ve.threshDMax"] <= ve.r[j + 1])
       }
       
-      # lagOrder <- VARselect(df.vecmFull[list.regimes[[currentRegime]], ])$selection[1]
-      # a too large lag number (in the case for russia) can lead to too little observations for single regimes
-      # therefore I just go with dMax + 1
-      lagOrder <- dMax + 1
       mod.VECM <- VECM(df.vecmFull[list.regimes[[currentRegime]], -ncol(df.vecmFull) ], lag = lagOrder,
           exogen = df.vecmFull[list.regimes[[currentRegime]], "ve.threshDMax"])
       
       df.exoPred <- getDumvarPredictions(df.data, inSample = i, dMax = dMax, p = p, h = h)
       df.predictionsTVECM <- rbind.data.frame(df.predictionsTVECM,
           # predict(mod.VECM, n.ahead = h, exoPred = matrix(df.exoPred[(i - a + 1):(i - a + h), 1]))[h, ])
-            predict(mod.VECM, n.ahead = h, exoPred = as.matrix(df.exoPred))[h, ])
-    
+          predict(mod.VECM, n.ahead = h, exoPred = as.matrix(df.exoPred))[h, ])
+      
       # RW /w drift predictions until element N
       df.predictionsRWD <- rbind.data.frame(df.predictionsRWD,
           rwf(df.inSample[, 1], h = h, drift = TRUE)$mean[h])
@@ -84,12 +86,12 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
     
     colnames(df.predictionsTVECM) <- colnames(df.data)
     df.eval <- data.frame(df.data[(a:(nrow(df.data) - h)), "s"],
-            tail(df.data[, "s"], nrow(df.predictionsTVECM)),
-            df.predictionsTVECM[, "s"], 
-            df.predictionsRWD)
+        tail(df.data[, "s"], nrow(df.predictionsTVECM)),
+        df.predictionsTVECM[, "s"], 
+        df.predictionsRWD)
     colnames(df.eval) <- c("s_t", "s_t+h", "TVECM", "RWD")
     cat(nrow(df.eval), "\n")
-        
+    
     RMSE.TVECM <- getRMSE(df.eval[,"s_t+h"], df.eval[, "TVECM"])
     RMSE.RWD <- getRMSE(df.eval[,"s_t+h"], df.eval[, "RWD"])
     RMSE.TVECM.norm <- RMSE.TVECM/RMSE.RWD
@@ -120,12 +122,12 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
     df.predictionsVECM <- NULL
     df.predictionsRWD <- NULL
     df.eval <- NULL
+    lagOrder <- 1
     
     for (i in a:(N - h)) {      
       df.inSample <- NULL
       df.inSample <- df.data[1:i, ]
       
-      lagOrder <- dMax + 1
       mod.VECM <- VECM(df.inSample, lag = lagOrder)
       df.predictionsVECM <- rbind.data.frame(df.predictionsVECM, predict(mod.VECM, n.ahead = h)[h, ])
       
@@ -140,6 +142,7 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
         df.predictionsVECM[, "s"], 
         df.predictionsRWD)
     colnames(df.eval) <- c("s_t", "s_t+h", "VECM", "RWD")
+    cat(nrow(df.eval), " linear \n")
     
     RMSE.VECM <- getRMSE( df.eval[, "s_t+h"], df.eval[, "VECM"])
     RMSE.RWD <- getRMSE(df.eval[, "s_t+h"], df.eval[, "RWD"])
@@ -153,7 +156,7 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
     
     DA.VECM <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
     DA.RWD <- getDA(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
-
+    
     DV.VECM <- getDV(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "VECM"])
     DV.RWD <- getDV(df.eval[, "s_t"], df.eval[, "s_t+h"], df.eval[, "RWD"])
     
@@ -173,7 +176,7 @@ getPredictions <- function (df.data, p = -1, ratio = 0.75, Crit = 2.32, k = 3, h
           df.thresholds = list.thresholds$list.thresholds$df.thresholds[,method],
           list.lmAIC = list.thresholds$list.lmAIC,
           list.lmSSR = list.thresholds$list.lmSSR
-          )
+      )
   )
 }
 

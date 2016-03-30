@@ -3,10 +3,10 @@
 # Author: Michi
 ###############################################################################
 
-getAnalysis <- function(df.data, p = -1, k = 3, n = 12, method = "SSR") {
+getAnalysis <- function(df.data, p = -1, k = 3, n = 12, method = "SSR", Crit = 2.32) {
   list.analysis <- NULL  
   list.analysis <- foreach (i = 1:n) %do% {
-    getPredictions(df.data, p = p, k = k, h = i, method = method)
+    getPredictions(df.data, p = p, k = k, h = i, method = method, Crit = Crit)
   }  
   for(i in 1:n) names(list.analysis)[i] <- paste("pred.h", i, sep = "")  
   return(list.analysis)
@@ -71,10 +71,10 @@ formatTablesNonlinear <- function(list.dataAIC, list.dataSSR) {
       "TVECM AIC", "TVECM SSR", "RWD", 
       "TVECM AIC", "TVECM SSR", "RWD",
       "TVECM AIC", "TVECM SSR", "RWD" 
-      )
-      
+  )
+  
   df.table1 <- df.all[,1:15]
-
+  
   return(df.table1)
 }
 

@@ -24,8 +24,8 @@ mj.plot <- function (ve.series, type = "l", name = "", col = 1, ve.points = -1, 
 mj.plotList <- function (list.data, type = "l", main = "", 
     col = 0, column = 1, ve.points = -1, ve.verticals = -1, 
     new = TRUE, interval = 0, ylim = -1, grid = TRUE,
-    xlab = "", ylab = ""
-    ) {
+    xlab = -1, ylab = ""
+) {
   dev.new()
   
   color1 <- c("violet", "violetred", "violetred1", "violetred2", "violetred3", "violetred4")
@@ -35,13 +35,14 @@ mj.plotList <- function (list.data, type = "l", main = "",
   splitSequence <- sequence[sequence %% interval == 0]
   
   obs <- paste("n = ", (list.data$N - list.data$p), sep = "")
+  if (xlab == -1) xlab <- obs
   
   if (min(ylim) == -1) ylim <- c(min(list.data$list.scatterAll[[1]][, column], na.rm = TRUE), 
         max(list.data$list.scatterAll[[1]][, column], na.rm = TRUE))
   plot(seq(0, (list.data$N - list.data$p)), type = type, col = 0, 
-      xlab = obs, las = 1, 
+      xlab = xlab, las = 1, 
       #mgp = c(2.6, 0.8, 0), las = 1,     # 1.6 label, 0.6 tick labels, 0 ticks - positions
-      cex.axis = 0.8, cex.lab = 0.8, cex.main = 1, 
+      cex.axis = 0.95, cex.lab = 0.95, cex.main = 1, 
       col.main = 1, main = main, ylim = ylim, ylab = ylab)
   
   if (grid) grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted", lwd = par("lwd"), equilogs = FALSE)

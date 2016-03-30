@@ -62,24 +62,27 @@ mj.plotList(list.JP, column = 3, ylim = c(7, 28), name = "t-statistics for y_t-1
 mj.plotList(list.JP, column = 4, ylim=c(-5.5, -1), name = "t-statistics for y_t-2")        # t-Statistic d = 2
 mj.plotList(list.JP, column = 5, ylim=c(0.5, 3), name = "t-statistics for y_t-3")        # t-Statistic d = 3
 mj.plotList(list.JP, column = 6, ylim=c(-2.6, 0.3), name = "t-statistics for y_t-4")     # t-Statistic d = 4
-list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(145, 290), intervalSize = 10)
+list.JP.Thresh <- getThresholds(list.JP, k = 3)
 rect(xleft = 290-132, xright = 290+132, ytop = 30, ybottom = 0, col = "#88FF8811")
 abline(v = 354,col = "cornflowerblue")
 abline(v = 290-132,col = "darkgreen")
 abline(v = 290+132,col = "darkgreen")
 
 # plot thresholds over ve.errorJP
-list.JP.Thresh <- getThresholds(list.JP, ve.indices = c(106, 317), intervalSize = 210)
+list.JP.Thresh <- getThresholds(list.JP, k = 3)
 list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestRSquared, ]
 list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestAIC, ]
 list.JP.Thresh$list.thresholds$df.adjCartesian[list.JP.Thresh$list.thresholds$bestSSR, ]
+
+list.JP <- testLinearity(ve.error)
+list.JP.Thresh <- getThresholds(list.JP, k = 3)
 mj.plot(ve.errorJP, grid = TRUE, ylab = "z_t", name = "Deviations USD/JPY")
 # draw thresholds 
 #abline(h = c(list.JP.Thresh$ve.thresholdLag[63], list.JP.Thresh$ve.thresholdLag[346]), lty = "dotted", col = 2)
 abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "SSR"], lty = "dotted", col = 2, lwd = 2)
 #abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "RSquared"], lty = "dotted", col = 3)
 #abline(h = list.JP.Thresh$list.thresholds$df.thresholds[, "AIC"], lty = "dotted", col = 4)
-abline(h = 0, lty = 1, col = "blue", lwd = 2)
+abline(h = 0, lty = 1, col = "blue", lwd = 1)
 text(x = 430, y = 0.085, labels="C2", col = "red", cex = 0.8)
 text(x = 430, y = -0.16, labels="C1", col = "red", cex = 0.8)
 
